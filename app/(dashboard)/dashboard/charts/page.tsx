@@ -1,29 +1,59 @@
-import { Suspense } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getQuotes, getHistoricalPrices, type TimeInterval } from '@/lib/fmp';
+import { SearchSymbol } from '@/components/search-symbol';
+import { PriceChart } from '@/components/price-chart';
+import { type TimeInterval, type Quote, type HistoricalPrice } from '@/lib/fmp';
+import { calculateEMACloud, calculatePivots, getRipsterStatus } from '@/lib/indicators';
 
-async function getChartData(symbol: string = 'AAPL', interval: TimeInterval = 'daily') {
-  try {
-    const [quoteData, pricesData] = await Promise.all([
-      getQuotes([symbol]),
-      getHistoricalPrices(symbol, interval)
-    ]);
+type RipsterStatusType = 'bullish' | 'bearish' | 'neutral';
 
-    return {
-      quote: quoteData[0],
-      prices: pricesData
-    };
-  } catch (error) {
-    console.error('Error fetching chart data:', error);
-    return {
-      quote: null,
-      prices: []
-    };
-  }
+interface RipsterState {
+  shortTerm: RipsterStatusType;
+  longTerm: RipsterStatusType;
+  strength: number;
 }
 
-export default async function ChartsPage() {
-  const { quote, prices } = await getChartData();
+export default function ChartsPage() {
+  const searchParams = useSearchParams();
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [prices, setPrices] = useState<HistoricalPrice[]>([]);
+  const [interval, setInterval] = useState<TimeInterval>('1hour');
+  const [pivots, setPivots] = useState({ r2: 0, r1: 0, pp: 0, s1: 0, s2: 0 });
+  const [ripsterStatus, setRipsterStatus] = useState<RipsterState>({
+    shortTerm: 'neutral',
+    longTerm: 'neutral',
+    strength: 0
+  });
+  
+  const symbol = searchParams.get('symbol') || 'AAPL';
+
+  useEffect(() => {
+    fetchChartData(symbol, interval);
+  }, [symbol, interval]);
+
+  async function fetchChartData(symbol: string, timeInterval: TimeInterval) {
+    try {
+      const data = await fetch(`/api/chart-data?symbol=${symbol}&interval=${timeInterval}`)
+        .then(res => res.json());
+      setQuote(data.quote);
+      setPrices(data.prices);
+      
+      if (data.prices.length > 0) {
+        const cloud5_12 = calculateEMACloud(data.prices, 5, 12);
+        const cloud34_50 = calculateEMACloud(data.prices, 34, 50);
+        const newPivots = calculatePivots(data.prices);
+        const status = getRipsterStatus(cloud5_12, cloud34_50);
+        
+        setPivots(newPivots);
+        setRipsterStatus(status);
+      }
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+    }
+  }
   
   return (
     <div className="space-y-8">
@@ -39,41 +69,39 @@ export default async function ChartsPage() {
           <Card className="h-[600px]">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>AAPL - Apple Inc.</CardTitle>
-                  <CardDescription>
-                    NASDAQ: AAPL - 1D Interval
+                <div className="w-72">
+                  <SearchSymbol defaultSymbol="AAPL" />
+                  <CardDescription className="mt-1">
+                    {quote?.symbol} - {interval} Interval
                   </CardDescription>
                 </div>
                 <div className="flex space-x-2">
-                  <select className="rounded-md border p-1.5 text-sm">
-                    <option value="1m">1m</option>
-                    <option value="5m">5m</option>
-                    <option value="15m">15m</option>
-                    <option value="1h">1h</option>
-                    <option value="4h">4h</option>
-                    <option value="1d" selected>1D</option>
-                    <option value="1w">1W</option>
-                  </select>
-                  <select className="rounded-md border p-1.5 text-sm">
-                    <option>Indicators</option>
-                    <option>EMA</option>
-                    <option>SMA</option>
-                    <option>MACD</option>
-                    <option>RSI</option>
-                    <option>Bollinger Bands</option>
+                  <select 
+                    className="rounded-md border p-1.5 text-sm"
+                    value={interval}
+                    onChange={(e) => setInterval(e.target.value as TimeInterval)}
+                  >
+                    <option value="1min">1m</option>
+                    <option value="5min">5m</option>
+                    <option value="15min">15m</option>
+                    <option value="1hour">1h</option>
+                    <option value="4hour">4h</option>
+                    <option value="daily">1D</option>
                   </select>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="h-[500px] flex items-center justify-center bg-muted/20">
-                <div className="text-center space-y-3">
-                  <p className="text-muted-foreground">Chart wird geladen...</p>
-                  <p className="text-xs text-muted-foreground">Lightweight Charts wird hier implementiert</p>
+            <div className="h-[500px]">
+              {prices.length > 0 ? (
+                <PriceChart data={prices} height={500} />
+              ) : (
+                <div className="h-full flex items-center justify-center bg-muted/20">
+                  <div className="text-center space-y-3">
+                    <p className="text-muted-foreground">Chart wird geladen...</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
+              )}
+            </div>
           </Card>
         </div>
         
@@ -91,11 +119,14 @@ export default async function ChartsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Aktuell</p>
-                      <p className="text-lg font-medium">$192.75</p>
+                      <p className="text-lg font-medium">${quote?.price?.toFixed(2) || '0.00'}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Veränderung</p>
-                      <p className="text-lg font-medium text-green-600">+$1.53 (0.8%)</p>
+                      <p className={`text-lg font-medium ${quote?.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {quote?.change > 0 ? '+' : ''}
+                        ${quote?.change?.toFixed(2) || '0.00'} ({quote?.changesPercentage?.toFixed(1) || '0.0'}%)
+                      </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Tageshoch</p>
@@ -130,23 +161,23 @@ export default async function ChartsPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">R2</span>
-                      <span className="text-sm">$196.50</span>
+                      <span className="text-sm">${pivots.r2.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">R1</span>
-                      <span className="text-sm">$194.25</span>
+                      <span className="text-sm">${pivots.r1.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center bg-green-50 dark:bg-green-900/20 p-1.5 rounded-sm">
                       <span className="text-sm font-medium">Pivot</span>
-                      <span className="text-sm">$192.75</span>
+                      <span className="text-sm">${pivots.pp.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">S1</span>
-                      <span className="text-sm">$190.50</span>
+                      <span className="text-sm">${pivots.s1.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">S2</span>
-                      <span className="text-sm">$188.25</span>
+                      <span className="text-sm">${pivots.s2.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -163,42 +194,42 @@ export default async function ChartsPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                    <div className={`rounded-lg p-3 ${ripsterStatus.shortTerm === 'bullish' ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ripsterStatus.shortTerm === 'bearish' ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800'} border`}>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">10-Min Status</span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                          Bullisch
+                        <span className="text-sm font-medium">Kurzfrist Status</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${ripsterStatus.shortTerm === 'bullish' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : ripsterStatus.shortTerm === 'bearish' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300'}`}>
+                          {ripsterStatus.shortTerm === 'bullish' ? 'Bullisch' : ripsterStatus.shortTerm === 'bearish' ? 'Bearish' : 'Neutral'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                         <span>EMA 5/12:</span>
-                        <span>Über Crossover</span>
+                        <span>{ripsterStatus.shortTerm === 'bullish' ? 'Über Crossover' : ripsterStatus.shortTerm === 'bearish' ? 'Unter Crossover' : 'Neutral'}</span>
                       </div>
                     </div>
                     
-                    <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                    <div className={`rounded-lg p-3 ${ripsterStatus.longTerm === 'bullish' ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ripsterStatus.longTerm === 'bearish' ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800'} border`}>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">1-Std Status</span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                          Bullisch
+                        <span className="text-sm font-medium">Langfrist Status</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${ripsterStatus.longTerm === 'bullish' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : ripsterStatus.longTerm === 'bearish' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300'}`}>
+                          {ripsterStatus.longTerm === 'bullish' ? 'Bullisch' : ripsterStatus.longTerm === 'bearish' ? 'Bearish' : 'Neutral'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                         <span>EMA 34/50:</span>
-                        <span>Über</span>
+                        <span>{ripsterStatus.longTerm === 'bullish' ? 'Über' : ripsterStatus.longTerm === 'bearish' ? 'Unter' : 'Neutral'}</span>
                       </div>
                     </div>
                     
-                    <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                    <div className={`rounded-lg p-3 ${ripsterStatus.shortTerm === ripsterStatus.longTerm ? (ripsterStatus.shortTerm === 'bullish' ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ripsterStatus.shortTerm === 'bearish' ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800') : 'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800'} border`}>
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium">Multi-Frame</span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                          Setup Bestätigt
+                        <span className={`text-xs px-2 py-1 rounded-full ${ripsterStatus.shortTerm === ripsterStatus.longTerm ? (ripsterStatus.shortTerm === 'bullish' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : ripsterStatus.shortTerm === 'bearish' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-300') : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300'}`}>
+                          {ripsterStatus.shortTerm === ripsterStatus.longTerm ? (ripsterStatus.shortTerm === 'bullish' ? 'Setup Bestätigt' : ripsterStatus.shortTerm === 'bearish' ? 'Setup Bestätigt' : 'Neutral') : 'Divergenz'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                         <span>Trend-Stärke:</span>
-                        <span>82/100</span>
+                        <span>{ripsterStatus.strength}/100</span>
                       </div>
                     </div>
                   </div>

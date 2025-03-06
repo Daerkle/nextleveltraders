@@ -69,14 +69,21 @@ export async function getHistoricalPrices(
 ): Promise<HistoricalPrice[]> {
   try {
     let endpoint = '';
+    let params = new URLSearchParams({
+      apikey: FMP_API_KEY || '',
+    });
+
     if (interval === 'daily') {
       endpoint = `historical-price-full/${symbol}`;
+      // For daily data, we need more historical data for pivot calculations
+      params.append('limit', Math.max(limit, 30).toString());
     } else {
       endpoint = `historical-chart/${interval}/${symbol}`;
+      params.append('limit', limit.toString());
     }
 
     const response = await fetch(
-      `${FMP_BASE_URL}/${endpoint}?apikey=${FMP_API_KEY}&limit=${limit}`
+      `${FMP_BASE_URL}/${endpoint}?${params.toString()}`
     );
 
     if (!response.ok) {
@@ -85,7 +92,23 @@ export async function getHistoricalPrices(
 
     const data = await response.json();
     const prices = interval === 'daily' ? data.historical : data;
-    return Array.isArray(prices) ? prices.reverse() : [];
+    
+    if (!Array.isArray(prices)) {
+      console.error('Unexpected data format from FMP API:', data);
+      return [];
+    }
+
+    // Sort data by date (newest first)
+    return prices
+      .map(price => ({
+        date: price.date,
+        open: Number(price.open) || 0,
+        high: Number(price.high) || 0,
+        low: Number(price.low) || 0,
+        close: Number(price.close) || 0,
+        volume: Number(price.volume) || 0
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   } catch (error) {
     console.error('Error fetching historical prices:', error);
     return [];

@@ -40,15 +40,49 @@ export default async function WatchlistsPage() {
     );
   }
 
-  const watchlists = await prisma.watchlist.findMany({
-    where: { userId },
-    include: { items: true },
-    orderBy: { updatedAt: 'desc' },
-  });
+  let watchlists = [];
+  let quotes = [];
+  let retryCount = 0;
+  const maxRetries = 3;
 
-  // Hole Echtzeit-Marktdaten für alle Symbole
-  const symbols = [...new Set(watchlists.flatMap(w => w.items.map(item => item.symbol)))];
-  const quotes = await getQuotes(symbols);
+  while (retryCount < maxRetries) {
+    try {
+      // Fetch watchlists
+      watchlists = await prisma.watchlist.findMany({
+        where: { userId },
+        include: { items: true },
+        orderBy: { updatedAt: 'desc' }
+      });
+
+      // Get unique symbols from all watchlists
+      const symbols = [...new Set(watchlists.flatMap(w => w.items.map(item => item.symbol)))];
+      
+      // Fetch quotes if we have symbols
+      if (symbols.length > 0) {
+        quotes = await getQuotes(symbols);
+      }
+      
+      // If we get here, the operation was successful
+      break;
+    } catch (error) {
+      console.error(`Error fetching data (attempt ${retryCount + 1}/${maxRetries}):`, error);
+      retryCount++;
+      
+      if (retryCount === maxRetries) {
+        return (
+          <div className="flex items-center justify-center h-[60vh]">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-semibold">Fehler beim Laden der Daten</h2>
+              <p className="text-muted-foreground">Es konnte keine Verbindung zur Datenbank hergestellt werden. Bitte versuchen Sie es später erneut.</p>
+            </div>
+          </div>
+        );
+      }
+      
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.min(1000 * Math.pow(2, retryCount), 5000)));
+    }
+  }
   const quotesMap = new Map(quotes.map(quote => [quote.symbol, quote]));
 
   // Füge Marktdaten zu den Watchlists hinzu

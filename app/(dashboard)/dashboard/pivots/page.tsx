@@ -1,434 +1,316 @@
 import { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getQuotes } from '@/lib/fmp';
+import { SearchSymbol } from '@/components/search-symbol';
+import { type Quote, type HistoricalPrice } from '@/lib/fmp';
+import { calculateTimeBasedPivots, calculateDeMarkPivots } from '@/lib/indicators';
 
-async function getPivotData(symbol: string = 'AAPL', type: string = 'standard', timeframe: string = 'daily') {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/pivots/${symbol}?type=${type}&timeframe=${timeframe}`,
-      { next: { revalidate: 300 } } // Cache for 5 minutes
-    );
+import { type StandardPivotLevels } from '@/lib/indicators';
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch pivot data');
+// Calculate the number of times a price level was touched
+function getTouches(prices: HistoricalPrice[], level: number): string {
+  const tolerance = 0.001; // 0.1% tolerance
+  let touches = 0;
+  let lastTouch = false;
+
+  for (const price of prices) {
+    const high = price.high;
+    const low = price.low;
+    const isTouch = (high >= level * (1 - tolerance) && high <= level * (1 + tolerance)) ||
+                   (low >= level * (1 - tolerance) && low <= level * (1 + tolerance));
+    
+    if (isTouch && !lastTouch) {
+      touches++;
     }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching pivot data:', error);
-    return null;
+    lastTouch = isTouch;
   }
+
+  if (touches === 0) return 'None';
+  if (touches === 1) return 'Once';
+  if (touches === 2) return 'Twice';
+  if (touches === 3) return 'Three times';
+  return 'Multiple';
 }
 
-export default async function PivotsPage() {
-  const data = await getPivotData();
-  if (!data) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">Fehler beim Laden der Pivot-Daten</p>
-      </div>
-    );
-  }
 
-  const { symbol, quote, pivots } = data;
+export default async function PivotsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const params = await Promise.resolve(searchParams);
+  const symbolParam = (params.symbol as string) || 'AAPL';
+  const timeframe = (params.timeframe as string) || 'daily';
+
+  try {
+    // Fetch data from FMP API
+    const [quote, historicalData] = await Promise.all([
+      // Get current quote
+      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbolParam}?apikey=${process.env.FMP_API_KEY}`)
+        .then(res => res.json()),
+      // Get historical data - ensure we get enough data for yearly calculations
+      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/${symbolParam}?timeseries=365&apikey=${process.env.FMP_API_KEY}`)
+        .then(res => res.json())
+    ]);
+
+    if (!quote || quote.length === 0 || !historicalData?.historical) {
+      return (
+        <div className="p-4 text-center">
+          <p className="text-muted-foreground">Error loading market data</p>
+        </div>
+      );
+    }
+
+  // Historical data comes in reverse chronological order (newest first)
+  const prices = historicalData.historical;
+  const currentPrice = quote[0].price;
+  const currentQuote = quote[0];
+
+  // Calculate pivot levels for different timeframes
+  const timeframes = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
+  const pivotResults = timeframes.map(tf => {
+    let relevantPrices;
+
+    // Ensure we have at least 2 days of data
+    if (prices.length < 2) {
+      return {
+        timeframe: tf,
+        levels: { r3: 0, r2: 0, r1: 0, pp: 0, s1: 0, s2: 0, s3: 0 } as StandardPivotLevels,
+        demark: { x: 0, r1: 0, pp: 0, s1: 0 }
+      };
+    }
+
+    // Select data based on timeframe
+    switch (tf) {
+      case 'daily':
+        // For daily, use yesterday's data
+        relevantPrices = [prices[1]];
+        break;
+      case 'weekly':
+        // For weekly, use last 5 trading days
+        relevantPrices = prices.length >= 6 ? prices.slice(1, 6) : [prices[1]];
+        break;
+      case 'monthly':
+        // For monthly, use last 21 trading days
+        relevantPrices = prices.length >= 22 ? prices.slice(1, 22) : [prices[1]];
+        break;
+      case 'quarterly':
+        // For quarterly, use last 63 trading days
+        relevantPrices = prices.length >= 64 ? prices.slice(1, 64) : [prices[1]];
+        break;
+      case 'yearly':
+        // For yearly, use last 252 trading days
+        relevantPrices = prices.length >= 253 ? prices.slice(1, 253) : [prices[1]];
+        break;
+      default:
+        relevantPrices = [prices[1]];
+    }
+
+    return {
+      timeframe: tf,
+      levels: calculateTimeBasedPivots(relevantPrices, tf, 'standard') as StandardPivotLevels,
+      demark: calculateDeMarkPivots(relevantPrices.slice(0, 1))
+    };
+  });
+
+  // Format pivot levels for display
+  const formatPivotLevels = (levels: StandardPivotLevels, demarkLevels: DeMarkPivotLevels, prices: HistoricalPrice[]) => {
+    const pivots = Object.entries(levels)
+      .filter(([key]) => key !== 'pp')
+      .map(([level, value]) => ({
+        level: level.toUpperCase(),
+        value,
+        demarkValue: level === 'R1' ? demarkLevels.r1 : 
+                     level === 'S1' ? demarkLevels.s1 : null,
+        distance: ((value - currentPrice) / currentPrice) * 100,
+        isAbove: value > currentPrice,
+        touches: getTouches(prices, value)
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // Insert PP in the middle
+    pivots.splice(Math.floor(pivots.length / 2), 0, {
+      level: 'PP',
+      value: levels.pp,
+      demarkValue: demarkLevels.pp,
+      distance: 0,
+      isAbove: false,
+      touches: getTouches(prices, levels.pp)
+    });
+
+    return pivots;
+  };
+
+  const pivotsByTimeframe = pivotResults.map(({ timeframe, levels, demark }) => ({
+    timeframe,
+    pivots: formatPivotLevels(levels, demark, prices)
+  }));
+
+  const renderPivotCard = (title: string, pivotLevels: StandardPivotLevels, demarkLevels: { pp: number; r1: number; s1: number }, description: string) => {
+    if (!pivotLevels) return null;
+
+    const getPriceClass = (price: number) => {
+      if (price === pivotLevels.pp) return 'bg-green-50 dark:bg-green-900/20';
+      if (Math.abs(currentPrice - price) < 0.5) return 'bg-blue-50 dark:bg-blue-900/20';
+      return '';
+    };
+
+    const renderLevel = (label: string, value: number | undefined, colorClass: string) => {
+      if (value === undefined) return null;
+      return (
+        <div className={`flex justify-between items-center p-1.5 rounded-sm ${getPriceClass(value)}`}>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-medium ${colorClass}`}>{label}</span>
+            {Math.abs(currentPrice - value) < 0.5 && (
+              <span className="text-xs text-blue-500">Current</span>
+            )}
+          </div>
+          <span className={`text-sm ${colorClass}`}>${value.toFixed(2)}</span>
+        </div>
+      );
+    };
+
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex justify-between items-center">
+            <span>{title}</span>
+            {currentQuote && (
+              <span className={`text-sm ${currentQuote.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                ${currentQuote.price.toFixed(2)}
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            {renderLevel('R3', pivotLevels.r3, 'text-red-500')}
+            {renderLevel('R2', pivotLevels.r2, 'text-red-400')}
+            {renderLevel('R1', pivotLevels.r1, 'text-orange-400')}
+            {renderLevel('PP', pivotLevels.pp, 'text-green-600')}
+            {renderLevel('S1', pivotLevels.s1, 'text-orange-400')}
+            {renderLevel('S2', pivotLevels.s2, 'text-red-400')}
+            {renderLevel('S3', pivotLevels.s3, 'text-red-500')}
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-sm font-medium mb-2">DeMark Levels</p>
+              {renderLevel('PP (DeMark)', demarkLevels.pp, 'text-green-600')}
+              {renderLevel('R1 (DeMark)', demarkLevels.r1, 'text-orange-400')}
+              {renderLevel('S1 (DeMark)', demarkLevels.s1, 'text-orange-400')}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+  
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-3xl md:text-4xl">Pivot-Punkt-Analyse</h1>
+        <h1 className="font-heading text-3xl md:text-4xl">Pivot Analysis</h1>
         <p className="text-muted-foreground">
-          Multiframe-Pivot-Berechnungen und -Analyse für präzise Trading-Levels
+          Multi-Timeframe Pivot Point Analysis
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        <div className="md:col-span-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>AAPL - Pivot-Levels</CardTitle>
-                  <CardDescription>Apple Inc. - NASDAQ</CardDescription>
-                </div>
-                <div className="flex space-x-2">
-                  <select className="rounded-md border p-1.5 text-sm">
-                    <option value="standard">Standard Pivots</option>
-                    <option value="demark">DeMark Pivots</option>
-                  </select>
-                  <select className="rounded-md border p-1.5 text-sm">
-                    <option value="daily" selected>Täglich</option>
-                    <option value="weekly">Wöchentlich</option>
-                    <option value="monthly">Monatlich</option>
-                  </select>
-                </div>
+      <div className="w-full max-w-xl mx-auto">
+        <div className="flex flex-col gap-4">
+          <SearchSymbol defaultSymbol={symbolParam} />
+          {quote && (
+            <div className="flex items-center justify-between p-2 bg-card rounded-lg border">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{currentQuote.name || symbolParam}</p>
+                <p className="text-xs text-muted-foreground">
+                  Volume: {currentQuote.volume.toLocaleString()}
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[120px]">Level</TableHead>
-                      <TableHead>Wert</TableHead>
-                      <TableHead>Abstand</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Berührungen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pivots.map((level) => (
-                      <TableRow key={level.level} className={level.level === 'PP' ? 'bg-green-50 dark:bg-green-950/20' : ''}>
-                        <TableCell className={`font-medium ${level.isAbove ? 'text-green-600' : 'text-red-600'}`}>
-                          {level.level}
-                        </TableCell>
-                        <TableCell>${level.value.toFixed(2)}</TableCell>
-                        <TableCell>{level.distance > 0 ? '+' : ''}{level.distance.toFixed(1)}%</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent 
-                            ${level.level === 'PP' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 
-                              level.isAbove ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                            {level.level === 'PP' ? 'Am Pivot' : level.isAbove ? 'Über Preis' : 'Unter Preis'}
-                          </span>
-                        </TableCell>
-                        <TableCell>{level.touches}</TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow>
-                      <TableCell className="font-medium text-green-600">R4</TableCell>
-                      <TableCell>$201.10</TableCell>
-                      <TableCell>+4.3%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
-                          Über Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Keine</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-green-600">R3</TableCell>
-                      <TableCell>$197.95</TableCell>
-                      <TableCell>+2.7%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
-                          Über Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Keine</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-green-600">R2</TableCell>
-                      <TableCell>$195.85</TableCell>
-                      <TableCell>+1.6%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
-                          Über Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Einmal</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-green-600">R1</TableCell>
-                      <TableCell>$194.20</TableCell>
-                      <TableCell>+0.8%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
-                          Über Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Zweimal</TableCell>
-                    </TableRow>
-                    <TableRow className="bg-green-50 dark:bg-green-950/20">
-                      <TableCell className="font-bold">PP</TableCell>
-                      <TableCell className="font-bold">$192.75</TableCell>
-                      <TableCell className="font-bold">0.0%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
-                          Am Pivot
-                        </span>
-                      </TableCell>
-                      <TableCell>Mehrmals</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-red-600">S1</TableCell>
-                      <TableCell>$190.15</TableCell>
-                      <TableCell>-1.3%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-muted text-muted-foreground">
-                          Unter Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Dreimal</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-red-600">S2</TableCell>
-                      <TableCell>$188.50</TableCell>
-                      <TableCell>-2.2%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-muted text-muted-foreground">
-                          Unter Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Einmal</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-red-600">S3</TableCell>
-                      <TableCell>$185.90</TableCell>
-                      <TableCell>-3.6%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-muted text-muted-foreground">
-                          Unter Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Keine</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-red-600">S4</TableCell>
-                      <TableCell>$184.25</TableCell>
-                      <TableCell>-4.4%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-muted text-muted-foreground">
-                          Unter Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Keine</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium text-red-600">S5</TableCell>
-                      <TableCell>$181.65</TableCell>
-                      <TableCell>-5.8%</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-muted text-muted-foreground">
-                          Unter Preis
-                        </span>
-                      </TableCell>
-                      <TableCell>Keine</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
+              <div className="text-right space-y-1">
+                <p className="text-lg font-semibold">
+                  ${currentQuote.price.toFixed(2)}
+                </p>
+                <p className={`text-sm ${currentQuote.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {currentQuote.change >= 0 ? '+' : ''}{currentQuote.change.toFixed(2)} ({currentQuote.changesPercentage.toFixed(2)}%)
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="md:col-span-3">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pivot-Status</CardTitle>
-                <CardDescription>
-                  Aktueller Status in allen Zeitrahmen
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Tages-Status:</span>
-                      <span className="text-sm font-medium text-green-600">Am Pivot (PP)</span>
-                    </div>
-                    <div className="h-2.5 w-full rounded-full bg-muted">
-                      <div className="h-2.5 rounded-full bg-green-600" style={{ width: '50%' }}></div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>S3</span>
-                      <span>S2</span>
-                      <span>S1</span>
-                      <span className="font-bold">PP</span>
-                      <span>R1</span>
-                      <span>R2</span>
-                      <span>R3</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Wochen-Status:</span>
-                      <span className="text-sm font-medium text-green-600">Über Pivot (R1)</span>
-                    </div>
-                    <div className="h-2.5 w-full rounded-full bg-muted">
-                      <div className="h-2.5 rounded-full bg-green-600" style={{ width: '67%' }}></div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>S3</span>
-                      <span>S2</span>
-                      <span>S1</span>
-                      <span>PP</span>
-                      <span className="font-bold">R1</span>
-                      <span>R2</span>
-                      <span>R3</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Monats-Status:</span>
-                      <span className="text-sm font-medium text-red-600">Unter Pivot (S1)</span>
-                    </div>
-                    <div className="h-2.5 w-full rounded-full bg-muted">
-                      <div className="h-2.5 rounded-full bg-red-600" style={{ width: '33%' }}></div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>S3</span>
-                      <span>S2</span>
-                      <span className="font-bold">S1</span>
-                      <span>PP</span>
-                      <span>R1</span>
-                      <span>R2</span>
-                      <span>R3</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>DeMark Pivot-Analyse</CardTitle>
-                <CardDescription>
-                  Status in allen Zeitrahmen
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Tages DM</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                        Über DM R1
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      DM R1: $193.50 | DM PP: $191.25 | DM S1: $189.00
-                    </p>
-                  </div>
-                  
-                  <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Wochen DM</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                        Über DM R1
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      DM R1: $191.75 | DM PP: $190.25 | DM S1: $188.50
-                    </p>
-                  </div>
-                  
-                  <div className="rounded-lg p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Monats DM</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300">
-                        Unter DM S1
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      DM R1: $197.00 | DM PP: $195.25 | DM S1: $193.50
-                    </p>
-                  </div>
-                  
-                  <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Multiframe Status</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                        Long Setup Bestätigt
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      2/3 Zeitrahmen bullisch (über DM R1)
-                    </p>
-                    <div className="mt-2 flex items-center gap-1">
-                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                      <span className="text-xs text-green-600">SPY und QQQ Trend: Bullisch (ADX {'>'} 25)</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {pivotsByTimeframe ? (
+          <>
+            {pivotsByTimeframe.map(({ timeframe, pivots }) => {
+              const result = pivotResults.find(r => r.timeframe === timeframe);
+              if (!result) return null;
+              
+              const descriptions = {
+                daily: "Based on the last trading day",
+                weekly: "Based on the last 5 trading days",
+                monthly: "Based on the last 20 trading days",
+                quarterly: "Based on the last 60 trading days",
+                yearly: "Based on the last 250 trading days"
+              };
+
+              return renderPivotCard(
+                `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Pivot Points`,
+                result.levels,
+                result.demark,
+                descriptions[timeframe]
+              );
+            })}
+          </>
+        ) : (
+          <div className="col-span-3 text-center py-8 text-muted-foreground">
+            Loading pivot data...
+          </div>
+        )}
+      </div>
+
+      {quote && (
         <Card>
-          <CardHeader>
-            <CardTitle>Jahres-Pivot R2 Analyse</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle>Market Data</CardTitle>
             <CardDescription>
-              Langfristige Widerstandsniveaus und deren Erreichen
+              Current Technical Information
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Symbol</TableHead>
-                    <TableHead>Aktueller Kurs</TableHead>
-                    <TableHead>Jahres PP</TableHead>
-                    <TableHead>Jahres R2</TableHead>
-                    <TableHead>Abstand bis R2</TableHead>
-                    <TableHead>Zeit bis Erreichen</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">AAPL</TableCell>
-                    <TableCell>$192.75</TableCell>
-                    <TableCell>$175.50</TableCell>
-                    <TableCell>$205.25</TableCell>
-                    <TableCell>+6.5%</TableCell>
-                    <TableCell>Schätzung: 23 Tage</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
-                        Nähert sich
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">MSFT</TableCell>
-                    <TableCell>$417.32</TableCell>
-                    <TableCell>$350.75</TableCell>
-                    <TableCell>$445.50</TableCell>
-                    <TableCell>+6.8%</TableCell>
-                    <TableCell>Schätzung: 18 Tage</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
-                        Nähert sich
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">NVDA</TableCell>
-                    <TableCell>$924.79</TableCell>
-                    <TableCell>$700.25</TableCell>
-                    <TableCell>$925.00</TableCell>
-                    <TableCell>+0.02%</TableCell>
-                    <TableCell>Erreicht vor 2 Tagen</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
-                        Fast erreicht
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">AMZN</TableCell>
-                    <TableCell>$182.05</TableCell>
-                    <TableCell>$175.25</TableCell>
-                    <TableCell>$210.50</TableCell>
-                    <TableCell>+15.6%</TableCell>
-                    <TableCell>Schätzung: 45 Tage</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
-                        Auf dem Weg
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Current</p>
+                <p className="text-lg font-medium">${currentQuote.price.toFixed(2)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Change</p>
+                <p className={`text-lg font-medium ${currentQuote.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {currentQuote.change > 0 ? '+' : ''}
+                  ${currentQuote.change.toFixed(2)} ({currentQuote.changesPercentage.toFixed(1)}%)
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Day High</p>
+                <p className="text-lg font-medium">${currentQuote.dayHigh.toFixed(2)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Day Low</p>
+                <p className="text-lg font-medium">${currentQuote.dayLow.toFixed(2)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Volume</p>
+                <p className="text-lg font-medium">{(currentQuote.volume / 1000000).toFixed(1)}M</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Avg Volume</p>
+                <p className="text-lg font-medium">{(currentQuote.avgVolume / 1000000).toFixed(1)}M</p>
+              </div>
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
+  } catch (error) {
+    console.error('Error loading pivot data:', error);
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">Error loading pivot data: {error instanceof Error ? error.message : 'Unknown error'}</p>
+      </div>
+    );
+  }
 }

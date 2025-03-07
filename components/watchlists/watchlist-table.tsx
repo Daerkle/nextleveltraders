@@ -7,24 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-
-interface Quote {
-  symbol: string;
-  name?: string;
-  price: number;
-  changesPercentage: number;
-  volume: number;
-}
-
-interface WatchlistItem {
-  id: string;
-  symbol: string;
-  quote?: Quote;
-}
+import { WatchlistWithQuotes } from "@/types/watchlist";
 
 interface WatchlistTableProps {
   watchlistId: string;
-  items: WatchlistItem[];
+  items: WatchlistWithQuotes['items'];
 }
 
 export function WatchlistTable({ watchlistId, items }: WatchlistTableProps) {
@@ -53,8 +40,8 @@ export function WatchlistTable({ watchlistId, items }: WatchlistTableProps) {
       toast.success("Symbol erfolgreich hinzugefügt");
       setNewSymbol("");
       router.refresh();
-    } catch (error) {
-      toast.error(error.message);
+    } catch (error: any) {
+      toast.error(error?.message || "Ein unerwarteter Fehler ist aufgetreten");
     } finally {
       setIsAdding(false);
     }
@@ -75,11 +62,26 @@ export function WatchlistTable({ watchlistId, items }: WatchlistTableProps) {
 
       toast.success("Symbol erfolgreich entfernt");
       router.refresh();
-    } catch (error) {
-      toast.error(error.message);
+    } catch (error: any) {
+      toast.error(error?.message || "Ein unerwarteter Fehler ist aufgetreten");
     } finally {
       setIsRemoving(null);
     }
+  };
+
+  const formatPrice = (price?: number) => {
+    if (typeof price !== 'number') return "0.00";
+    return price.toFixed(2);
+  };
+
+  const formatPercentage = (value?: number) => {
+    if (typeof value !== 'number') return "0.00";
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}`;
+  };
+
+  const formatVolume = (volume?: number) => {
+    if (typeof volume !== 'number') return "-";
+    return `${(volume / 1000000).toFixed(1)}M`;
   };
 
   return (
@@ -125,20 +127,19 @@ export function WatchlistTable({ watchlistId, items }: WatchlistTableProps) {
               <TableCell className="font-medium">{item.symbol}</TableCell>
               <TableCell>{item.quote?.name || item.symbol}</TableCell>
               <TableCell className="text-right">
-                ${item.quote?.price?.toFixed(2) || "0.00"}
+                ${formatPrice(item.quote?.price)}
               </TableCell>
               <TableCell
                 className={`text-right ${
-                  item.quote?.changesPercentage >= 0
+                  (item.quote?.changesPercentage ?? 0) >= 0
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
               >
-                {item.quote?.changesPercentage >= 0 ? "+" : ""}
-                {item.quote?.changesPercentage?.toFixed(2)}%
+                {formatPercentage(item.quote?.changesPercentage)}%
               </TableCell>
               <TableCell className="text-right">
-                {(item.quote?.volume / 1000000).toFixed(1)}M
+                {formatVolume(item.quote?.volume)}
               </TableCell>
               <TableCell className="text-right">
                 <Button

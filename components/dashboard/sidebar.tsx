@@ -8,38 +8,46 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 
 import {
+  AtomIcon,
   BarChart3Icon,
   BookOpenIcon,
-  BrainCircuitIcon,
   GlobeIcon,
   HomeIcon,
-  ListOrderedIcon,
   MessageSquareIcon,
   PanelRightIcon,
   Settings2Icon,
 } from "lucide-react";
 
-// Navigation aus bestehendem Code
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
   { name: "Charts", href: "/dashboard/charts", icon: BarChart3Icon },
   { name: "Pivot-Analysen", href: "/dashboard/pivots", icon: PanelRightIcon },
-  { name: "KI-Analyse", href: "/dashboard/ai-analysis", icon: BrainCircuitIcon },
-  { name: "Watchlisten", href: "/dashboard/watchlists", icon: ListOrderedIcon },
+  { name: "KI-Analyse", href: "/dashboard/ai-analysis", icon: AtomIcon },
   { name: "News", href: "/dashboard/news", icon: GlobeIcon },
   { 
     name: "KI-Chat", 
     href: "/dashboard/chat", 
     icon: ({ className, isActive }: { className?: string, isActive?: boolean }) => (
-      <img 
-        src="/nexus_white.png"
-        alt="Nexus Logo"
-        className={cn(
-          "h-5 w-5 object-contain flex-shrink-0",
-          className,
-          isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
-        )}
-      />
+      <>
+        <img
+          src="/nexus.png"
+          alt="Nexus Logo"
+          className={cn(
+            "h-5 w-5 object-contain flex-shrink-0 dark:hidden",
+            className,
+            isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+          )}
+        />
+        <img
+          src="/nexus_white.png"
+          alt="Nexus Logo"
+          className={cn(
+            "h-5 w-5 object-contain flex-shrink-0 hidden dark:block",
+            className,
+            isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+          )}
+        />
+      </>
     )
   },
   { name: "Wissen", href: "/dashboard/knowledge", icon: BookOpenIcon },
@@ -166,15 +174,36 @@ export const DesktopSidebar = ({
                     : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                 )}
               >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    isActive
-                      ? "text-sidebar-primary"
-                      : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
-                  )}
-                  aria-hidden="true"
-                />
+                {item.name === "KI-Chat" ? (
+                  <>
+                    <img
+                      src="/nexus.png"
+                      alt="Nexus Logo"
+                      className={cn(
+                        "h-5 w-5 object-contain flex-shrink-0 dark:hidden",
+                        isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                      )}
+                    />
+                    <img
+                      src="/nexus_white.png"
+                      alt="Nexus Logo"
+                      className={cn(
+                        "h-5 w-5 object-contain flex-shrink-0 hidden dark:block",
+                        isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                      )}
+                    />
+                  </>
+                ) : (
+                  <Icon
+                    className={cn(
+                      "h-5 w-5 flex-shrink-0",
+                      isActive
+                        ? "text-sidebar-primary"
+                        : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
+                    )}
+                    aria-hidden="true"
+                  />
+                )}
                 {open && (
                   <motion.span
                     animate={{
@@ -266,15 +295,36 @@ export const MobileSidebar = ({
                     )}
                     onClick={() => setOpen(false)}
                   >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 flex-shrink-0",
-                        isActive
-                          ? "text-sidebar-primary"
-                          : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
-                      )}
-                      aria-hidden="true"
-                    />
+                    {item.name === "KI-Chat" ? (
+                      <>
+                        <img
+                          src="/nexus.png"
+                          alt="Nexus Logo"
+                          className={cn(
+                            "h-5 w-5 object-contain flex-shrink-0 dark:hidden",
+                            isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                          )}
+                        />
+                        <img
+                          src="/nexus_white.png"
+                          alt="Nexus Logo"
+                          className={cn(
+                            "h-5 w-5 object-contain flex-shrink-0 hidden dark:block",
+                            isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
+                          )}
+                        />
+                      </>
+                    ) : (
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 flex-shrink-0",
+                          isActive
+                            ? "text-sidebar-primary"
+                            : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
+                        )}
+                        aria-hidden="true"
+                      />
+                    )}
                     {item.name}
                   </Link>
                 );

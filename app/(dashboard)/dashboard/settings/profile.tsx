@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { Sun, Moon, LogOut, ChevronRight } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import { useState } from "react"
 import {
   Card,
   CardContent,
@@ -13,10 +13,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { SubscriptionDialog } from "@/components/subscription/subscription-dialog"
+import { Badge } from "@/components/ui/badge"
+import { useSubscription, getPlanStatusText, getPlanStatusColor } from "@/hooks/use-subscription"
+import { PLANS, SUBSCRIPTION_PLANS } from "@/config/subscriptions"
 
 export function UserProfile() {
   const { theme, setTheme } = useTheme()
   const { user } = useUser()
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false)
+  const { plan, status, isTrialing, trialEndsAt } = useSubscription()
+
+  const statusText = getPlanStatusText(status, isTrialing, trialEndsAt)
+  const statusColor = getPlanStatusColor(status)
 
   return (
     <div className="space-y-4">
@@ -59,31 +68,36 @@ export function UserProfile() {
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium">Basic Plan</h3>
+              <h3 className="font-medium">{PLANS[plan].name}</h3>
               <p className="text-sm text-muted-foreground">
-                Dein aktuelles Abonnement
+                {isTrialing && trialEndsAt ? 
+                  `Trial endet am ${new Date(trialEndsAt).toLocaleDateString('de-DE')}` : 
+                  'Dein aktuelles Abonnement'
+                }
               </p>
             </div>
-            <span className="text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100 rounded-full px-2 py-1">
-              Aktiv
-            </span>
+            <Badge variant={statusColor}>
+              {statusText}
+            </Badge>
           </div>
 
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>Enthaltene Features:</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Basis Marktanalysen</li>
-              <li>Watchlist (max. 5 Symbole)</li>
-              <li>Tägliche News</li>
+              {PLANS[plan].features.map(feature => (
+                <li key={feature.name}>{feature.value}</li>
+              ))}
             </ul>
           </div>
 
-          <Link href="/subscription" className="block">
-            <Button variant="outline" className="w-full group">
-              Abo verwalten
-              <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            className="w-full group"
+            onClick={() => setIsSubscriptionDialogOpen(true)}
+          >
+            {plan === SUBSCRIPTION_PLANS.PRO ? 'Abonnement verwalten' : 'Upgrade auf Pro'}
+            <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
         </CardContent>
       </Card>
 
@@ -128,6 +142,12 @@ export function UserProfile() {
           </SignOutButton>
         </CardContent>
       </Card>
+
+      {/* Subscription Dialog */}
+      <SubscriptionDialog 
+        open={isSubscriptionDialogOpen} 
+        onOpenChange={setIsSubscriptionDialogOpen} 
+      />
     </div>
   )
 }

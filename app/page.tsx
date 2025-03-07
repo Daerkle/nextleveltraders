@@ -1,6 +1,14 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronRightIcon, SparklesIcon, StarIcon, TrendingUpIcon } from "lucide-react";
+import { 
+  ChevronRightIcon, 
+  SparklesIcon, 
+  StarIcon, 
+  TrendingUpIcon, 
+  CheckIcon 
+} from "lucide-react";
 import Link from "next/link";
 import { FooterSection } from "@/components/footer";
 import { FaDiscord } from "react-icons/fa";
@@ -10,8 +18,59 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+
+// Komponente für den Zähleffekt
+const CountUp = ({ value, duration = 500, decimals = 0 }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  useEffect(() => {
+    let startValue = displayValue;
+    const endValue = Number(value);
+    const startTime = performance.now();
+    
+    const updateValue = (currentTime) => {
+      const elapsedTime = currentTime - startTime;
+      if (elapsedTime >= duration) {
+        setDisplayValue(endValue);
+        return;
+      }
+      
+      const progress = elapsedTime / duration;
+      const nextValue = startValue + (endValue - startValue) * progress;
+      setDisplayValue(nextValue);
+      requestAnimationFrame(updateValue);
+    };
+    
+    requestAnimationFrame(updateValue);
+  }, [value, duration]);
+  
+  return decimals === 0 
+    ? Math.round(displayValue) 
+    : displayValue.toFixed(decimals);
+};
 
 export default function HomePage() {
+  const [isYearly, setIsYearly] = useState(false);
+  
+  // Preisberechnung
+  const monthlyPrice = 49;
+  const yearlyPrice = 500; // 49 * 12 * 0.85 gerundet
+  const yearlyMonthlyPrice = Math.round(yearlyPrice / 12);
+  
+  // Aktueller Preis basierend auf Abrechnungszeitraum
+  const currentPrice = isYearly ? yearlyPrice : monthlyPrice;
+  const priceLabel = isYearly ? "/Jahr" : "/Monat";
+  const monthlyPriceLabel = isYearly ? `(${yearlyMonthlyPrice}€/Monat)` : "";
+
   return (
     <div className="flex-1">
       {/* Header */}
@@ -54,7 +113,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-            Nutzen Sie fortschrittliche technische Analysetools, KI-gestützte Entscheidungshilfen 
+            Nutzen Sie fortschrittliche technische Analyseabilities, KI-gestützte Entscheidungshilfen 
             und professionelle Charting-Funktionen für Ihren Handelserfolg.
           </p>
           <div className="space-x-4">
@@ -78,7 +137,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
           <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">Features</h2>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            Entdecken Sie unsere leistungsstarken Trading-Tools und Analysen.
+            Entdecken Sie unsere leistungsstarken Trading-Abilities und Analysen.
           </p>
         </div>
         <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
@@ -115,8 +174,8 @@ export default function HomePage() {
         </div>
       </section>
 
- {/* Pricing Section */}
- <section
+      {/* Pricing Section mit verbesserten Cards */}
+      <section
         id="pricing"
         className="container space-y-6 py-8 md:py-12 lg:py-24"
       >
@@ -125,74 +184,123 @@ export default function HomePage() {
             Preise
           </h2>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            Wählen Sie den Plan, der am besten zu Ihnen passt.
+            Testen Sie alle Features 4 Tage kostenlos, dann entscheiden Sie sich.
           </p>
+          
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center space-x-4 mt-6">
+            <Label htmlFor="billing-toggle" className="text-sm font-medium">Monatlich</Label>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="billing-toggle"
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+              />
+              {isYearly && (
+                <span className="ml-2 inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-0.5 rounded">
+                  15% Rabatt
+                </span>
+              )}
+            </div>
+            <Label htmlFor="billing-toggle" className="text-sm font-medium">Jährlich</Label>
+          </div>
         </div>
-        <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] lg:grid-cols-3">
-          <Card className="flex flex-col p-6">
+        <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem]">
+          {/* Free Card mit Hover-Effekt */}
+          <Card className="flex flex-col p-6 transition-all duration-300 ease-in-out transform hover:-translate-y-2 hover:shadow-xl">
             <div className="flex-1 space-y-4">
-              <h3 className="font-bold">Basis</h3>
+              <h3 className="font-bold">Free</h3>
               <div className="text-3xl font-bold">€0</div>
               <p className="text-sm text-muted-foreground">
-                Perfekt zum Kennenlernen der Plattform
+                Voller Funktionsumfang für 4 Tage
               </p>
               <ul className="space-y-2 text-sm">
-                <li>✓ Basis Pivot-Punkt-Analyse</li>
-                <li>✓ Begrenzte Chart-Funktionen</li>
-                <li>✓ 15-Minuten verzögerte Daten</li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Erweiterte Pivot-Analysen
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Vollständige Chart-Funktionen
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Echtzeit-Daten
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  KI-Trading-Assistent
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Multi-Timeframe-Analysen
+                </li>
               </ul>
             </div>
-            <div className="pt-4">
+            <div className="pt-6 mt-auto">
               <Link href="/sign-up">
-                <Button className="w-full">Kostenlos starten</Button>
+                <Button className="w-full transition-colors duration-300 hover:bg-primary/90">
+                  Kostenlos testen
+                </Button>
               </Link>
             </div>
           </Card>
-          <Card className="flex flex-col p-6 border-primary">
+          
+          {/* Pro Card mit Hover-Effekt und Highlight */}
+          <Card className="flex flex-col p-6 border-primary relative overflow-hidden transition-all duration-300 ease-in-out transform hover:-translate-y-2 hover:shadow-xl bg-gradient-to-br hover:from-primary/5 hover:to-transparent">
+            {/* Theme-angepasstes Empfohlen-Badge */}
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">
+              Empfohlen
+            </div>
             <div className="flex-1 space-y-4">
               <h3 className="font-bold">Pro</h3>
-              <div className="text-3xl font-bold">€29</div>
+              <div className="text-3xl font-bold h-14 flex items-center">
+                €<CountUp value={currentPrice} duration={800} />
+                <span className="text-lg font-normal text-muted-foreground ml-1">{priceLabel}</span>
+              </div>
+              {isYearly && (
+                <p className="text-sm text-muted-foreground -mt-2">
+                  {monthlyPriceLabel}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground">
-                Ideal für aktive Trader
+                Nach Ablauf der Testphase
               </p>
               <ul className="space-y-2 text-sm">
-                <li>✓ Erweiterte Pivot-Analysen</li>
-                <li>✓ Vollständige Chart-Funktionen</li>
-                <li>✓ Echtzeit-Daten</li>
-                <li>✓ KI-Trading-Assistent</li>
-                <li>✓ Multi-Timeframe-Analysen</li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Erweiterte Pivot-Analysen
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Vollständige Chart-Funktionen
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Echtzeit-Daten
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  KI-Trading-Assistent
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+                  Multi-Timeframe-Analysen
+                </li>
               </ul>
             </div>
-            <div className="pt-4">
-              <Link href="/sign-up">
-                <Button className="w-full">Pro-Version wählen</Button>
-              </Link>
-            </div>
-          </Card>
-          <Card className="flex flex-col p-6">
-            <div className="flex-1 space-y-4">
-              <h3 className="font-bold">Enterprise</h3>
-              <div className="text-3xl font-bold">Individuell</div>
-              <p className="text-sm text-muted-foreground">
-                Maßgeschneiderte Lösungen für Institutionen
-              </p>
-              <ul className="space-y-2 text-sm">
-                <li>✓ Alle Pro-Features</li>
-                <li>✓ API-Zugang</li>
-                <li>✓ Dedizierter Support</li>
-                <li>✓ Custom Integrationen</li>
-              </ul>
-            </div>
-            <div className="pt-4">
-              <Link href="/contact">
-                <Button variant="outline" className="w-full">Kontakt aufnehmen</Button>
+            <div className="pt-6 mt-auto">
+              <Link href={`/sign-up?plan=pro&billing=${isYearly ? 'yearly' : 'monthly'}`}>
+                <Button className="w-full bg-primary hover:bg-primary/90 transition-colors duration-300">
+                  Pro-Version wählen
+                </Button>
               </Link>
             </div>
           </Card>
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section mit Accordion */}
       <section
         id="faq"
         className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24"
@@ -205,37 +313,60 @@ export default function HomePage() {
             Häufig gestellte Fragen
           </p>
         </div>
-        <div className="mx-auto grid gap-4 md:max-w-[58rem]">
-          <Card className="p-6">
-            <h3 className="font-bold">Was macht NextLevelTraders besonders?</h3>
-            <p className="mt-2 text-muted-foreground">
-              Wir kombinieren fortschrittliche technische Analyse mit KI-gestützter Entscheidungsfindung. 
-              Unsere Plattform bietet einzigartige Features wie DeMark-Pivot-Analysen, Multi-Timeframe-Bestätigungen 
-              und einen KI-Assistenten für fundierte Trading-Entscheidungen.
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="font-bold">Wie genau sind die Pivot-Punkt-Berechnungen?</h3>
-            <p className="mt-2 text-muted-foreground">
-              Unsere Pivot-Punkte werden nach dem DeMark-Algorithmus berechnet, der sich besonders in 
-              trendbehafteten Märkten bewährt hat. Die Berechnungen basieren auf historischen Daten 
-              und werden in Echtzeit aktualisiert.
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="font-bold">Kann ich die Plattform kostenlos testen?</h3>
-            <p className="mt-2 text-muted-foreground">
-              Ja, mit unserem kostenlosen Basis-Plan können Sie die grundlegenden Funktionen der Plattform 
-              kennenlernen. Für Zugriff auf alle Features empfehlen wir den Pro-Plan.
-            </p>
-          </Card>
-          <Card className="p-6">
-            <h3 className="font-bold">Welche Märkte werden unterstützt?</h3>
-            <p className="mt-2 text-muted-foreground">
-              Wir unterstützen eine breite Palette von Märkten, darunter Aktien, ETFs und Kryptowährungen. 
-              Die Daten werden in Echtzeit bereitgestellt (Pro-Plan) oder mit 15 Minuten Verzögerung (Basis-Plan).
-            </p>
-          </Card>
+        <div className="mx-auto md:max-w-[58rem]">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-left font-medium">
+                Was macht NextLevelTraders besonders?
+              </AccordionTrigger>
+              <AccordionContent>
+                Wir kombinieren fortschrittliche technische Analyse mit KI-gestützter Entscheidungsfindung. 
+                Unsere Plattform bietet einzigartige Features wie DeMark-Pivot-Analysen, Multi-Timeframe-Bestätigungen 
+                und einen KI-Assistenten für fundierte Trading-Entscheidungen.
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-left font-medium">
+                Wie genau sind die Pivot-Punkt-Berechnungen?
+              </AccordionTrigger>
+              <AccordionContent>
+                Unsere Pivot-Punkte werden nach dem DeMark-Algorithmus berechnet, der sich besonders in 
+                trendbehafteten Märkten bewährt hat. Die Berechnungen basieren auf historischen Daten 
+                und werden in Echtzeit aktualisiert.
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="item-3">
+              <AccordionTrigger className="text-left font-medium">
+                Kann ich die Plattform kostenlos testen?
+              </AccordionTrigger>
+              <AccordionContent>
+                Ja, mit unserem kostenlosen Basis-Plan können Sie die grundlegenden Funktionen der Plattform 
+                kennenlernen. Für Zugriff auf alle Features empfehlen wir den Pro-Plan.
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="item-4">
+              <AccordionTrigger className="text-left font-medium">
+                Welche Märkte werden unterstützt?
+              </AccordionTrigger>
+              <AccordionContent>
+                Wir unterstützen eine breite Palette von Märkten, darunter Aktien, ETFs und Kryptowährungen. 
+                Die Daten werden in Echtzeit bereitgestellt (Pro-Plan) oder mit 15 Minuten Verzögerung (Basis-Plan).
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="item-5">
+              <AccordionTrigger className="text-left font-medium">
+                Gibt es Rabatte bei jährlicher Zahlung?
+              </AccordionTrigger>
+              <AccordionContent>
+                Ja, bei jährlicher Zahlung erhalten Sie einen Rabatt von 15% gegenüber der monatlichen Zahlungsweise. 
+                Dies entspricht einer Ersparnis von 88€ pro Jahr.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
@@ -263,5 +394,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-

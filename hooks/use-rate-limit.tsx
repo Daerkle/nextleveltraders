@@ -10,9 +10,10 @@ interface RateLimitInfo {
 }
 
 export function useRateLimit() {
-  const { isPro } = useSubscription();
+  const { isPro, isLoading: subscriptionLoading } = useSubscription();
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null);
   const [isBlocked, setIsBlocked] = useState(false);
+  const isLoading = subscriptionLoading || !rateLimitInfo;
 
   const parseRateLimitHeaders = useCallback((headers: Headers): RateLimitInfo => {
     return {
@@ -98,8 +99,9 @@ export function useRateLimit() {
     rateLimitInfo,
     isBlocked,
     isPro,
-    currentLimit: rateLimitInfo?.limit || (isPro ? 1000 : 100),
-    remainingRequests: rateLimitInfo?.remaining || 0,
+    isLoading,
+    currentLimit: isLoading ? 0 : rateLimitInfo?.limit || (isPro ? 1000 : 100),
+    remainingRequests: isLoading ? 0 : rateLimitInfo?.remaining || 0,
     resetTime: rateLimitInfo?.reset,
     retryAfter: rateLimitInfo?.retryAfter,
   };

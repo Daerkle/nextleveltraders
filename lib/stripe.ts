@@ -1,122 +1,64 @@
-import Stripe from 'stripe';
+import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY ist nicht definiert')
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2022-11-15',
   typescript: true,
-});
+})
 
-export async function getSubscriptionPlan(userId: string) {
-  try {
-    // Suche nach Kunden anhand der Metadaten
-    const customers = await stripe.customers.search({
-      query: `metadata["userId"]:"${userId}"`,
-    });
+export const getStripeCustomer = async ({
+  stripe,
+  userId,
+  email,
+}: {
+  stripe: Stripe
+  userId: string
+  email?: string
+}) => {
+  // Suche nach Kunden mit der entsprechenden user_id in den Metadaten
+  const customers = await stripe.customers.search({
+    query: `metadata['user_id']:'${userId}'`,
+    limit: 1,
+  })
 
-    if (customers.data.length === 0) {
-      return {
-        hasSubscription: false,
-        isPro: false,
-      };
-    }
+  let customer = customers.data[0]
 
-    const customer = customers.data[0];
-
-    // Hole aktive Abonnements
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'active',
-    });
-
-    if (subscriptions.data.length === 0) {
-      return {
-        hasSubscription: false,
-        isPro: false,
-      };
-    }
-
-    const subscription = subscriptions.data[0];
-    const price = subscription.items.data[0].price;
-    const isProPlan = price.product === process.env.STRIPE_PRO_PRODUCT_ID;
-
-    return {
-      hasSubscription: true,
-      isPro: isProPlan,
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+  if (!customer && email) {
+    // Erstelle einen neuen Kunden, wenn keiner gefunden wurde
+    customer = await stripe.customers.create({
+      email,
+      metadata: {
+        user_id: userId,
       },
-    };
-  } catch (error) {
-    console.error('Fehler beim Abrufen des Abonnements:', error);
-    return {
-      hasSubscription: false,
-      isPro: false,
-      error: 'Fehler beim Abrufen des Abonnements',
-    };
+    })
   }
+
+  return customer
 }
 
-export async function createCustomerPortalSession(customerId: string, returnUrl: string) {
-  try {
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: returnUrl,
-    });
-
-    return { url: portalSession.url };
-  } catch (error) {
-    console.error('Fehler beim Erstellen der Portal-Session:', error);
-    throw new Error('Fehler beim Erstellen der Portal-Session');
-  }
+export const getStripeSubscription = async ({
+  stripe,
+  subscriptionId,
+}: {
+  stripe: Stripe
+  subscriptionId: string
+}) => {
+  return await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ['items.data.price'],
+  })
 }
 
-export function formatAmountForStripe(
-  amount: number,
-  currency: string
-): number {
-  const currencies = {
-    USD: 100, // US cents
-    EUR: 100, // Euro cents
-    GBP: 100, // Penny sterling
-    JPY: 1,   // Japanese yen doesn't use decimals
-  };
+export type StripeSubscriptionWithPrice = Awaited<
+  ReturnType<typeof getStripeSubscription>
+>
 
-  const multiplier = currencies[currency as keyof typeof currencies] || 100;
-  return Math.round(amount * multiplier);
-}
-
-export function formatAmountFromStripe(
-  amount: number,
-  currency: string
-): number {
-  const currencies = {
-    USD: 100,
-    EUR: 100,
-    GBP: 100,
-    JPY: 1,
-  };
-
-  const divider = currencies[currency as keyof typeof currencies] || 100;
-  return Math.round((amount / divider) * 100) / 100;
-}
-
-export const PLANS = {
-  PRO: {
-    name: 'NextLevelTraders Pro',
-    description: 'Vollständiger Zugriff auf alle Trading-Features',
-    features: [
-      'Erweiterte Pivot-Analysen',
-      'Echtzeit-Daten',
-      'KI-Trading-Assistent',
-      'Multi-Timeframe-Analysen',
-      'Unbegrenzte Watchlists',
-      'API-Zugang',
-      'Prioritäts-Support',
-    ],
-    price: 29.00,
-    interval: 'month' as const,
+export const formatStripePrice = (price: number) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
     currency: 'EUR',
-  },
-};
+    minimumFractionDigits: 2,
+  }).format(price / 100)
+}

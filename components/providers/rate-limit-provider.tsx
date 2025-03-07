@@ -15,13 +15,14 @@ const RateLimitContext = createContext<ReturnType<typeof useRateLimit> | undefin
 
 export function RateLimitProvider({ children, showStatus = false }: RateLimitProviderProps) {
   const rateLimitState = useRateLimit();
+  const { isLoading } = rateLimitState;
 
   return (
     <RateLimitContext.Provider value={rateLimitState}>
       <div className="relative">
         {children}
-        {showStatus && (
-          <div className="fixed bottom-4 right-4 z-50">
+        {showStatus && !isLoading && (
+          <div className="fixed bottom-4 right-4 z-50" suppressHydrationWarning>
             <RateLimitStatus />
           </div>
         )}

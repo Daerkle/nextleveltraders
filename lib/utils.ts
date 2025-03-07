@@ -1,45 +1,34 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-/**
- * Kombiniert und bereinigt Tailwind-CSS-Klassen
- */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
-/**
- * Formatiert einen Betrag als Währung
- */
-export function formatCurrency(amount: number, currency = "EUR", locale = "de-DE") {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-  }).format(amount);
+export function getURL() {
+  let url =
+    process?.env?.NEXT_PUBLIC_SITE_URL ?? // Set this in .env
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel
+    'http://localhost:3000/'
+
+  // Stellen Sie sicher, dass die URL mit https:// beginnt, es sei denn, es ist localhost
+  url = url.includes('localhost') ? url : url.replace('http://', 'https://')
+
+  // Entfernen Sie trailing slash, falls vorhanden
+  url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
+
+  return url
 }
 
-/**
- * Formatiert ein Datum
- */
-export function formatDate(date: Date | string, options: Intl.DateTimeFormatOptions = {}) {
-  const dateToFormat = typeof date === "string" ? new Date(date) : date;
-  
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
+export function formatDate(input: string | number): string {
+  const date = new Date(input)
+  return date.toLocaleDateString("de-DE", {
+    month: "long",
+    day: "numeric",
     year: "numeric",
-    ...options,
-  }).format(dateToFormat);
+  })
 }
 
-/**
- * Erzeugt eine zufällige ID
- */
-export function generateId(length = 12) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
+export function absoluteUrl(path: string) {
+  return `${getURL()}${path}`
 }

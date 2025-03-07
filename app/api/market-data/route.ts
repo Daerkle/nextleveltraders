@@ -1,8 +1,34 @@
 import { NextResponse } from "next/server";
 
-const FMP_API_KEY = process.env.FMP_API_KEY;
+const FMP_API_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY;
 
-export async function GET() {
+interface MarketNewsItem {
+  title: string;
+  text: string;
+  symbol: string;
+  publishedDate: string;
+}
+
+interface FMPQuote {
+  symbol: string;
+  name?: string;
+  price: number;
+  change: number;
+  changesPercentage: number;
+  dayHigh: number;
+  dayLow: number;
+  volume: number;
+  avgVolume?: number;
+}
+
+interface MarketDataResponse {
+  spy: FMPQuote;
+  qqq: FMPQuote;
+  watchlist: FMPQuote[];
+  news: MarketNewsItem[];
+}
+
+export async function GET(): Promise<NextResponse<MarketDataResponse>> {
   try {
     // Fetch SPY and QQQ data
     const [spyResponse, qqqResponse] = await Promise.all([
@@ -22,7 +48,7 @@ export async function GET() {
     const watchlistData = await watchlistResponse.json();
 
     // Fetch market news using available endpoint
-    let newsData = [];
+    const newsData: MarketNewsItem[] = [];
     try {
       const newsResponse = await fetch(
         `https://financialmodelingprep.com/api/v3/stock_market/actives?apikey=${FMP_API_KEY}`
@@ -30,39 +56,49 @@ export async function GET() {
       const responseData = await newsResponse.json();
       
       if (Array.isArray(responseData)) {
-        newsData = responseData.slice(0, 5).map(item => ({
-          title: `${item.symbol} - ${item.changesPercentage.toFixed(2)}%`,
-          text: `Price: $${item.price.toFixed(2)} | Change: ${item.change.toFixed(2)} | Volume: ${item.volume}`,
-          symbol: item.symbol,
-          publishedDate: new Date().toISOString()
-        }));
+        responseData.slice(0, 5).forEach((item: FMPQuote) => {
+          newsData.push({
+            title: `${item.symbol} - ${item.changesPercentage.toFixed(2)}%`,
+            text: `Price: $${item.price.toFixed(2)} | Change: ${item.change.toFixed(2)} | Volume: ${item.volume}`,
+            symbol: item.symbol,
+            publishedDate: new Date().toISOString()
+          });
+        });
       } else {
         console.warn('Unexpected market data format:', responseData);
-        newsData = [];
       }
     } catch (error) {
       console.error('Error fetching market data:', error);
-      newsData = [];
     }
 
     // Transform the data to use correct percentage changes
-    const transformQuote = (quote: any) => ({
-      ...quote,
-      change: quote?.changesPercentage || 0, // Use changesPercentage for percentage change
+    const transformQuote = (quote: Partial<FMPQuote>): FMPQuote => ({
+      symbol: quote?.symbol || '',
+      name: quote?.name,
       price: quote?.price || 0,
-      symbol: quote?.symbol || ''
+      change: quote?.change || 0,
+      changesPercentage: quote?.changesPercentage || 0,
+      dayHigh: quote?.dayHigh || 0,
+      dayLow: quote?.dayLow || 0,
+      volume: quote?.volume || 0,
+      avgVolume: quote?.avgVolume
     });
 
     return NextResponse.json({
-      spy: transformQuote(spyData[0] || { changesPercentage: 0 }),
-      qqq: transformQuote(qqqData[0] || { changesPercentage: 0 }),
+      spy: transformQuote(spyData?.[0] || {}),
+      qqq: transformQuote(qqqData?.[0] || {}),
       watchlist: Array.isArray(watchlistData) ? watchlistData.map(transformQuote) : [],
       news: newsData
     });
   } catch (error) {
     console.error("Error fetching market data:", error);
     return NextResponse.json(
-      { error: "Failed to fetch market data" },
+      { 
+        spy: {} as FMPQuote,
+        qqq: {} as FMPQuote,
+        watchlist: [],
+        news: []
+      },
       { status: 500 }
     );
   }

@@ -1,0 +1,101 @@
+"use client"
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PlanSelection } from "@/components/subscription/plan-selection"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User } from "lucide-react"
+
+export default function SettingsPage() {
+  return (
+    <div className="container py-8 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight">Einstellungen</h1>
+        <p className="text-muted-foreground text-lg">
+          Verwalte dein Profil und Abonnement
+        </p>
+      </div>
+
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="profile">Profil</TabsTrigger>
+          <TabsTrigger value="subscription">Abonnement</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6">
+          {/* Profil-Informationen */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil</CardTitle>
+              <CardDescription>
+                Aktualisiere deine persönlichen Informationen
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src="" />
+                  <AvatarFallback>
+                    <User className="h-12 w-12" />
+                  </AvatarFallback>
+                </Avatar>
+                <Button variant="outline">Bild ändern</Button>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" placeholder="Dein Name" />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="email">E-Mail</Label>
+                  <Input id="email" type="email" placeholder="mail@example.com" />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button>Änderungen speichern</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sicherheit */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sicherheit</CardTitle>
+              <CardDescription>
+                Verwalte deine Sicherheitseinstellungen
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="current-password">Aktuelles Passwort</Label>
+                <Input id="current-password" type="password" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="new-password">Neues Passwort</Label>
+                <Input id="new-password" type="password" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-password">Passwort bestätigen</Label>
+                <Input id="confirm-password" type="password" />
+              </div>
+              <div className="flex justify-end">
+                <Button>Passwort ändern</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subscription">
+          <PlanSelection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

@@ -50,7 +50,42 @@ export type Database = {
 };
 
 // Supabase-Client erstellen
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase Konfigurationsfehler:', {
+    url: supabaseUrl ? 'vorhanden' : 'fehlt',
+    anonKey: supabaseAnonKey ? 'vorhanden' : 'fehlt'
+  });
+  throw new Error(
+    'Supabase Umgebungsvariablen fehlen. Bitte stelle sicher, dass NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local gesetzt sind.'
+  );
+}
+
+// Erstelle einen Supabase Client ohne Auth (da wir Clerk für Auth verwenden)
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'x-application-name': 'nextleveltraders'
+    }
+  }
+});
+
+// Exportiere eine Funktion, die den Supabase Client mit einem Clerk Session Token erstellt
+export function createClientWithAuth(clerkToken?: string) {
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    db: {
+      schema: 'public'
+    },
+    global: {
+      headers: {
+        'x-application-name': 'nextleveltraders',
+        ...(clerkToken ? { Authorization: `Bearer ${clerkToken}` } : {})
+      }
+    }
+  });
+}

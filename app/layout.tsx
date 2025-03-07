@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
 import localFont from "next/font/local";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -7,15 +6,35 @@ import { cn } from "@/lib/utils";
 
 import "./globals.css";
 
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
+const fontSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/Geist-Regular.otf",
+      weight: "400",
+      style: "normal"
+    },
+    {
+      path: "../public/fonts/Geist-Medium.otf",
+      weight: "500",
+      style: "normal"
+    },
+    {
+      path: "../public/fonts/Geist-SemiBold.otf",
+      weight: "600",
+      style: "normal"
+    },
+    {
+      path: "../public/fonts/Geist-Bold.otf",
+      weight: "700",
+      style: "normal"
+    }
+  ],
+  variable: "--font-sans"
 });
 
-// Font files can be found in public/fonts
 const fontHeading = localFont({
-  src: "../public/fonts/CalSans-SemiBold.woff2",
-  variable: "--font-heading",
+  src: "../public/fonts/Geist-Bold.otf",
+  variable: "--font-heading"
 });
 
 interface RootLayoutProps {

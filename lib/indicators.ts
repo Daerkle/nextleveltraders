@@ -63,19 +63,30 @@ export interface EMACloud {
 }
 
 export function calculateEMA(prices: number[], period: number): number[] {
+  if (!prices.length || period <= 0) return [];
+
+  // Calculate SMA for initial EMA value
+  let sma = 0;
+  for (let i = 0; i < period && i < prices.length; i++) {
+    sma += prices[i];
+  }
+  sma = sma / period;
+
   const k = 2 / (period + 1);
   const emaData: number[] = [];
-  let ema = prices[0];
-  
-  for (let i = 0; i < prices.length; i++) {
-    if (i === 0) {
-      emaData.push(ema);
-      continue;
-    }
-    ema = (prices[i] * k) + (ema * (1 - k));
-    emaData.push(ema);
+  let ema = sma;
+
+  // Fill initial values with SMA
+  for (let i = 0; i < period - 1 && i < prices.length; i++) {
+    emaData.push(sma);
   }
-  
+
+  // Calculate EMA values
+  for (let i = period - 1; i < prices.length; i++) {
+    ema = (prices[i] * k) + (ema * (1 - k));
+    emaData.push(Number(ema.toFixed(2)));
+  }
+
   return emaData;
 }
 
@@ -84,8 +95,13 @@ export function calculateEMACloud(
   fastPeriod: number,
   slowPeriod: number
 ): EMACloud {
-  const closePrices = prices.map(p => p.close);
-  const dates = prices.map(p => p.date);
+  // Sort prices chronologically
+  const sortedPrices = [...prices].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  
+  const closePrices = sortedPrices.map(p => p.close);
+  const dates = sortedPrices.map(p => p.date);
   
   const fastEMA = calculateEMA(closePrices, fastPeriod);
   const slowEMA = calculateEMA(closePrices, slowPeriod);

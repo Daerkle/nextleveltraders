@@ -2,16 +2,51 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronRightIcon, SparklesIcon, StarIcon, TrendingUpIcon } from "lucide-react";
 import Link from "next/link";
+import { FooterSection } from "@/components/footer";
+import { FaDiscord } from "react-icons/fa";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function HomePage() {
   return (
     <div className="flex-1">
+      {/* Header */}
+      <header className="container flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="NextLevelTraders Logo" className="h-10 w-auto object-contain" />
+          <div className="flex items-baseline">
+            <span className="font-heading font-bold text-xl">Next</span>
+            <span className="font-heading font-light text-xl">Level</span>
+            <span className="font-heading font-bold text-xl">Traders</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="https://discord.gg/6AGuBbsnFR" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="icon" className="rounded-full h-10 w-10">
+                    <FaDiscord className="h-5 w-5" />
+                    <span className="sr-only">Discord</span>
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Join us on Discord</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
         <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center">
-          <div className="rounded-2xl bg-muted px-4 py-1.5 text-sm font-medium">
-            🎉 Willkommen bei NextLevelTraders
-          </div>
+         
           <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
             Trading auf einem{" "}
             <span className="bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
@@ -223,6 +258,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <FooterSection />
     </div>
   );
 }

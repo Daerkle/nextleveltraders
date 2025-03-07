@@ -144,8 +144,9 @@ export function PriceChart({
       },
     });
 
-    // Format and sort data by time
-    const formattedData = data
+    // Format and sort data chronologically by time
+    const formattedData = [...data]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map(item => ({
         time: new Date(item.date).getTime() / 1000,
         open: item.open,

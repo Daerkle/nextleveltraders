@@ -1,4 +1,4 @@
-const FMP_API_KEY = process.env.FMP_API_KEY;
+const FMP_API_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY;
 const FMP_BASE_URL = 'https://financialmodelingprep.com/api/v3';
 
 export type TimeInterval = '1min' | '5min' | '15min' | '30min' | '1hour' | '4hour' | 'daily';

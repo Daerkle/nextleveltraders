@@ -1,286 +1,321 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { BrainCircuitIcon, SendIcon } from "lucide-react";
-import { useState } from "react";
-import { useSubscriptionContext } from "@/components/subscription/subscription-provider";
+import { SendIcon } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useChat } from "@/lib/hooks/use-chat";
+import { Message as ChatMessage } from "@/lib/types/chat";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface MessageProps {
+  content: string;
+  isUser: boolean;
+  userImage?: string;
+}
+
+function Message({ content, isUser, userImage }: MessageProps) {
+  return (
+    <div className="flex gap-3">
+      <div className={`h-8 w-8 rounded-full ${isUser ? 'bg-secondary/20' : 'bg-primary/20'} flex items-center justify-center overflow-hidden ${!isUser ? 'p-1.5' : ''}`}>
+        {isUser ? (
+          userImage ? (
+            <img
+              src={userImage}
+              alt="Profilbild"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-sm font-medium">Sie</span>
+          )
+        ) : (
+          <img
+            src="/nexus_white.png"
+            alt="Nexus Logo"
+            className="w-6 h-6 object-contain"
+          />
+        )}
+      </div>
+      <div className={`flex-1 rounded-lg ${isUser ? 'bg-secondary/20' : 'bg-muted'} p-3`}>
+        <p className="text-sm whitespace-pre-wrap">{content}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function ChatPage() {
-  const [message, setMessage] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const { features } = useSubscriptionContext();
+  const { user } = useUser();
+  const { messages, isLoading, error, sendMessage } = useChat();
+
+  const welcomeMessage: ChatMessage = {
+    role: 'assistant',
+    content: 'Willkommen bei NextLevelTraders KI-Chat! Ich kann Ihnen mit Marktanalysen, Finanzdaten und Trading-Strategien helfen. Ich habe direkten Zugriff auf Echtzeit-Marktdaten über die Financial Modeling Prep API.'
+  };
+
+  const templates = [
+    // Daytrader Templates
+    {
+      category: 'Daytrader: Pivot-Analyse',
+      text: 'Berechne die Intraday-Pivot-Punkte für AAPL und zeige die wichtigsten Preiszonen für heute'
+    },
+    {
+      category: 'Daytrader: Volumen-Analyse',
+      text: 'Analysiere das Volumen-Profil von TSLA und identifiziere die Value-Areas'
+    },
+    {
+      category: 'Daytrader: News-Impact',
+      text: 'Welche wichtigen News-Events stehen heute für MSFT an und wie könnten sie den Kurs beeinflussen?'
+    },
+
+    // Swing Trader Templates
+    {
+      category: 'Swing Trader: Chart-Patterns',
+      text: 'Finde aktuelle Chart-Patterns in GOOGL und analysiere die Erfolgswahrscheinlichkeiten'
+    },
+    {
+      category: 'Swing Trader: Momentum',
+      text: 'Erstelle eine Watchlist der stärksten Momentum-Aktien für die nächste Woche'
+    },
+    {
+      category: 'Swing Trader: Sektoranalyse',
+      text: 'Welcher Sektor zeigt aktuell die beste relative Stärke für Swing-Trades?'
+    },
+
+    // Investoren Templates
+    {
+      category: 'Investor: Fundamentalanalyse',
+      text: 'Führe eine detaillierte Fundamentalanalyse von MSFT durch (KGV, KBV, Dividenden, Wachstum)'
+    },
+    {
+      category: 'Investor: Branchen-Research',
+      text: 'Analysiere die Wachstumschancen im KI-Sektor und identifiziere die Top 5 Unternehmen'
+    },
+    {
+      category: 'Investor: Risiko-Analyse',
+      text: 'Bewerte die makroökonomischen Risiken für ein langfristiges Investment in AAPL'
+    }
+  ];
+
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const message = inputValue.trim();
+
+    if (message && !isLoading) {
+      setInputValue('');
+      await sendMessage(message);
+    }
+  };
+
+  const handleTemplateClick = (template: string) => {
+    setInputValue(template);
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl md:text-4xl">Trading-KI-Assistent</h1>
+        <h2 className="text-2xl font-bold">KI-Chat</h2>
         <p className="text-muted-foreground">
-          Fragen Sie unseren Trading-Assistenten für Setup-Analysen und Markteinblicke
+          Nutzen Sie unseren KI-Assistenten für Trading-Analysen und Marktinformationen
         </p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-6">
-        <div className="md:col-span-5">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+        <div className="md:col-span-4">
           <Card className="h-[calc(100vh-220px)] flex flex-col">
             <CardHeader>
-              <CardTitle>Chat mit TradingGPT</CardTitle>
+              <CardTitle>Chat mit NeXus</CardTitle>
               <CardDescription>
                 Nutzen Sie unser KI-Modell für Trading-Analysen und Marktinformationen
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto p-6 space-y-4">
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <BrainCircuitIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 rounded-lg bg-muted p-3">
-                  <p className="text-sm">
-                    Willkommen bei NextLevelTraders KI-Chat! Ich kann Ihnen bei Trading-Analysen, 
-                    Pivot-Punkt-Berechnungen, technischen Indikatoren und Trading-Strategien helfen. 
-                    Wie kann ich Ihnen heute behilflich sein?
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                  <span className="text-sm font-medium">Sie</span>
-                </div>
-                <div className="flex-1 rounded-lg bg-secondary/20 p-3">
-                  <p className="text-sm">
-                    Wie funktionieren DeMark Pivots und wie unterscheiden sie sich von Standard-Pivots?
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <BrainCircuitIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 rounded-lg bg-muted p-3">
-                  <p className="text-sm">
-                    <span className="font-medium">DeMark Pivot Punkte vs. Standard Pivot Punkte:</span>
-                    <br/><br/>
-                    <span className="font-medium">Standard Pivot Punkte:</span>
-                    <br />
-                    Die klassischen Pivot Punkte basieren auf dem Durchschnitt von Hoch, Tief und Schluss des vorherigen Zeitraums:
-                    <br />
-                    Pivot (PP) = (Hoch + Tief + Schluss) / 3
-                    <br />
-                    Darauf basieren dann R1, R2, S1, S2 usw.
-                    <br /><br />
-                    
-                    <span className="font-medium">DeMark Pivot Punkte:</span>
-                    <br />
-                    DeMark Pivots verwenden eine bedingte Formel, die die Beziehung zwischen Eröffnungs- und Schlusskurs berücksichtigt:
-                    <br /><br />
-                    Wenn Schluss &lt; Eröffnung:
-                    <br />
-                    X = Hoch + (2 × Tief) + Schluss
-                    <br /><br />
-                    Wenn Schluss &gt; Eröffnung:
-                    <br />
-                    X = (2 × Hoch) + Tief + Schluss
-                    <br /><br />
-                    Der Pivot ist dann:
-                    <br />
-                    DeMark PP = X / 4
-                    <br /><br />
-                    DeMark Pivots reagieren stärker auf die Marktdynamik des letzten Zeitraums und können bei trendbehafteten Märkten genauere Unterstützungs- und Widerstandsniveaus liefern.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                  <span className="text-sm font-medium">Sie</span>
-                </div>
-                <div className="flex-1 rounded-lg bg-secondary/20 p-3">
-                  <p className="text-sm">
-                    Wie wird eine Multiframe-Bestätigung bei Trading-Setups durchgeführt?
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <BrainCircuitIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 rounded-lg bg-muted p-3">
-                  <p className="text-sm">
-                    <span className="font-medium">Multiframe-Bestätigung bei Trading-Setups:</span>
-                    <br /><br/>
-                    Eine Multiframe-Bestätigung bedeutet, dass ein Trading-Setup in mehreren Zeitrahmen (Timeframes) bestätigt wird, was die Zuverlässigkeit des Signals erhöht.
-                    <br /><br/>
-                    <span className="font-medium">Wie man Multiframe-Bestätigung durchführt:</span>
-                    <br/>
-                    1. <span className="font-medium">Identifizieren Sie die relevanten Zeitrahmen:</span> Typischerweise drei Zeitrahmen - ein höherer (z.B. täglich/wöchentlich), ein mittlerer (z.B. 4h/1h) und ein niedrigerer (z.B. 15min/5min).
-                    <br/><br/>
-                    2. <span className="font-medium">Analysieren Sie den höheren Zeitrahmen zuerst:</span> Dieser gibt die Haupttrendrichtung an. Bei NextLevelTraders verwenden wir dafür oft die Monats- und Wochencharts.
-                    <br/><br/>
-                    3. <span className="font-medium">Bestätigung im mittleren Zeitrahmen:</span> Suchen Sie nach Setups, die mit dem übergeordneten Trend übereinstimmen. Bei uns sind das typischerweise die Tagesdaten und 1h-Charts.
-                    <br/><br/>
-                    4. <span className="font-medium">Eintritt im niedrigeren Zeitrahmen:</span> Der niedrigere Zeitrahmen (10min, 5min) dient zur präzisen Bestimmung des Einstiegspunkts.
-                    <br/><br/>
-                    5. <span className="font-medium">Anwendung von Indikatoren:</span> Bei NextLevelTraders verwenden wir EMA-Clouds in mehreren Zeitrahmen sowie Pivot-Punkte. Ein Setup gilt als bestätigt, wenn in mindestens 2 von 3 Zeitrahmen ein übereinstimmendes Signal vorliegt.
-                    <br/><br/>
-                    Beispiel: Ein bullisches Setup wird bestätigt, wenn der Kurs in mindestens 2 von 3 Zeitrahmen (Tag, Woche, Monat) über dem DM R1 liegt. Diese Multiframe-Bestätigung erhöht die Erfolgswahrscheinlichkeit erheblich.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <div className="flex w-full items-center space-x-2">
-                {features.canAccessRealTimeData && (
-                  <Input 
-                    placeholder="Symbol (z.B. AAPL)" 
-                    className="w-24" 
-                    value={symbol}
-                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                  />
-                )}
-                <Input 
-                  placeholder="Stellen Sie eine Frage zu Trading oder Marktanalyse..." 
-                  className="flex-1" 
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && message.trim()) {
-                      e.preventDefault();
-                      // Handle message submission
-                      fetch("/api/chat", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message, symbol: symbol || undefined })
-                      });
-                      setMessage("");
-                    }
-                  }}
+              <Message
+                content={welcomeMessage.content}
+                isUser={false}
+              />
+              {messages.map((msg, index) => (
+                <Message
+                  key={index}
+                  content={msg.content}
+                  isUser={msg.role === 'user'}
+                  userImage={msg.role === 'user' ? user?.imageUrl : undefined}
                 />
-                <Button 
-                  size="icon"
-                  onClick={() => {
-                    if (message.trim()) {
-                      fetch("/api/chat", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message, symbol: symbol || undefined })
-                      });
-                      setMessage("");
-                    }
-                  }}
-                >
+              ))}
+              {isLoading && (
+                <div className="text-sm text-muted-foreground">
+                  NeXus schreibt...
+                </div>
+              )}
+              {error && (
+                <div className="text-sm text-destructive">
+                  Fehler: {error}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="p-4 pt-2">
+              <form
+                onSubmit={handleSubmit}
+                className="flex w-full items-center space-x-2"
+              >
+                <Input
+                  id="message"
+                  name="message"
+                  placeholder="Schreiben Sie eine Nachricht..."
+                  className="flex-1"
+                  autoComplete="off"
+                  disabled={isLoading}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                />
+                <Button type="submit" size="icon" disabled={isLoading}>
                   <SendIcon className="h-4 w-4" />
                   <span className="sr-only">Nachricht senden</span>
                 </Button>
-              </div>
+              </form>
             </CardFooter>
           </Card>
         </div>
-        
-        <div className="md:col-span-2">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vorgeschlagene Fragen</CardTitle>
-                <CardDescription>
-                  Beginnen Sie mit diesen Beispielen
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-2">
-                  Wie interpretiere ich EMA-Cloud-Crossovers?
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-2">
-                  Was sind ADX-Werte und wie nutze ich sie?
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-2">
-                  Erklären Sie die Best Practices für Pivot-Trading
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-2">
-                  Was ist ein gutes Risk-Reward-Verhältnis?
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>KI-Funktionen</CardTitle>
-                <CardDescription>
-                  Möglichkeiten der Trading-KI
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mr-2 text-primary"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Setup-Analyse und Bewertung
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mr-2 text-primary"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Technische Indikator-Erklärungen
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mr-2 text-primary"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Trading-Strategie-Entwicklung
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mr-2 text-primary"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Markttrend-Einschätzungen
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="hidden md:block md:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Trading & Investment Vorlagen</CardTitle>
+              <CardDescription>
+                Wählen Sie Ihren Trading-Stil für passende Vorlagen
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="daytrader" className="w-full">
+                <TabsList className="w-full">
+                  <TabsTrigger value="daytrader" className="flex-1">Daytrader</TabsTrigger>
+                  <TabsTrigger value="swingtrader" className="flex-1">Swing Trader</TabsTrigger>
+                  <TabsTrigger value="investor" className="flex-1">Investoren</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="daytrader" className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Analysiere die Intraday-Bewegung von [SYMBOL] mit VWAP, RSI und Volumen-Profil.")}>
+                      <p className="text-sm font-medium mb-1">Technische Analyse</p>
+                      <p className="text-sm text-muted-foreground">Intraday-Indikatoren und Volumen-Profile für präzises Timing</p>
+                    </div>
+                    
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Zeige mir die wichtigsten Pivot-Punkte und Unterstützungs-/Widerstandszonen für [SYMBOL].")}>
+                      <p className="text-sm font-medium mb-1">Support & Resistance</p>
+                      <p className="text-sm text-muted-foreground">Pivot-Punkte und wichtige Preis-Levels für den Handel</p>
+                    </div>
+
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Was sind die wichtigsten News und Events heute für [SYMBOL]? Gibt es Earnings oder andere Market-Moving Events?")}>
+                      <p className="text-sm font-medium mb-1">News & Events</p>
+                      <p className="text-sm text-muted-foreground">Aktuelle News, Earnings und wichtige Markt-Events</p>
+                    </div>
+
+                    {templates
+                      .filter(template => template.category.startsWith('Daytrader'))
+                      .map((template, index) => (
+                        <div 
+                          key={`daytrader-${index}`}
+                          className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                          onClick={() => handleTemplateClick(template.text)}
+                        >
+                          <p className="text-sm font-medium mb-1">{template.category.replace('Daytrader: ', '')}</p>
+                          <p className="text-sm text-muted-foreground">{template.text}</p>
+                        </div>
+                      ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="swingtrader" className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Identifiziere die wichtigsten Chart-Patterns und Trendlinien für [SYMBOL] auf dem Daily Chart.")}>
+                      <p className="text-sm font-medium mb-1">Chart Patterns</p>
+                      <p className="text-sm text-muted-foreground">Technische Muster und Trendlinien für mehrtägige Setups</p>
+                    </div>
+
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Analysiere die relative Stärke von [SYMBOL] im Vergleich zum Sektor und berechne den RSI auf verschiedenen Timeframes.")}>
+                      <p className="text-sm font-medium mb-1">Momentum & Stärke</p>
+                      <p className="text-sm text-muted-foreground">Relative Stärke, Momentum und Sektorvergleich</p>
+                    </div>
+
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Berechne optimale Position-Size und Stop-Loss-Levels für [SYMBOL] basierend auf der aktuellen Volatilität.")}>
+                      <p className="text-sm font-medium mb-1">Risiko-Management</p>
+                      <p className="text-sm text-muted-foreground">Position-Sizing und Stop-Loss-Strategien</p>
+                    </div>
+
+                    {templates
+                      .filter(template => template.category.startsWith('Swing Trader'))
+                      .map((template, index) => (
+                        <div 
+                          key={`swingtrader-${index}`}
+                          className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                          onClick={() => handleTemplateClick(template.text)}
+                        >
+                          <p className="text-sm font-medium mb-1">{template.category.replace('Swing Trader: ', '')}</p>
+                          <p className="text-sm text-muted-foreground">{template.text}</p>
+                        </div>
+                      ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="investor" className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Analysiere die wichtigsten Fundamentaldaten von [SYMBOL]: KGV, KBV, Dividendenrendite und Wachstumsraten.")}>
+                      <p className="text-sm font-medium mb-1">Fundamentalanalyse</p>
+                      <p className="text-sm text-muted-foreground">Bewertungskennzahlen und Wachstumsmetriken</p>
+                    </div>
+
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Gib mir eine detaillierte Analyse der Branche und Wettbewerber von [SYMBOL]. Wie ist die Marktposition?")}>
+                      <p className="text-sm font-medium mb-1">Branchen-Research</p>
+                      <p className="text-sm text-muted-foreground">Wettbewerbsanalyse und Marktposition</p>
+                    </div>
+
+                    <div 
+                      className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                      onClick={() => handleTemplateClick("Wie wird [SYMBOL] von aktuellen makroökonomischen Faktoren beeinflusst? (Zinsen, Inflation, Wirtschaftsdaten)")}>
+                      <p className="text-sm font-medium mb-1">Makro-Einflüsse</p>
+                      <p className="text-sm text-muted-foreground">Einfluss von Wirtschaftsdaten und globalen Faktoren</p>
+                    </div>
+
+                    {templates
+                      .filter(template => template.category.startsWith('Investor'))
+                      .map((template, index) => (
+                        <div 
+                          key={`investor-${index}`}
+                          className="p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                          onClick={() => handleTemplateClick(template.text)}
+                        >
+                          <p className="text-sm font-medium mb-1">{template.category.replace('Investor: ', '')}</p>
+                          <p className="text-sm text-muted-foreground">{template.text}</p>
+                        </div>
+                      ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

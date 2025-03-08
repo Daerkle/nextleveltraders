@@ -18,7 +18,7 @@
     "validate": "npm-run-all --parallel lint typecheck test build"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.12.3",
+    "@clerk/nextjs": "^6.12.4",
     "@google/generative-ai": "^0.23.0",
     "@hookform/resolvers": "^3.2.0",
     "@prisma/client": "^5.1.1",

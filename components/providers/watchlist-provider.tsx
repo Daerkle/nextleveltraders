@@ -1,316 +1,305 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useWatchlistStore } from '@/stores/use-watchlist-store'
-import { supabase, createClientWithAuth } from '@/lib/supabase'
 import { WatchlistSidebar } from '@/components/watchlist-sidebar'
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase'
 import { toast } from 'sonner'
-import { useAuth } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
+
+interface WatchlistItem {
+  symbol: string;
+  price?: number;
+  change?: number;
+  [key: string]: any;
+}
 
 interface WatchlistProviderProps {
   children: React.ReactNode
 }
 
-type WatchlistChanges = RealtimePostgresChangesPayload<{
-  [key: string]: any
-}>
-
-interface WatchlistDBItem {
-  id: string
-  watchlist_id: string
-  symbol: string
-  created_at: string
-}
-
-const isSupabaseConfigured = process.env.NEXT_PUBLIC_SUPABASE_URL && 
-                            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
 export function WatchlistProvider({ children }: WatchlistProviderProps) {
   const store = useWatchlistStore()
   const { isSignedIn } = useUser();
-  const { getToken } = useAuth();
 
-  // Lade Marktdaten für die Watchlist-Symbole
+  // Verwende useRef, um die vorherigen Symbole zu speichern und Endlosschleifen zu vermeiden
+  const previousSymbolsRef = useRef<string>('');
+  const storeRef = useRef(store);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMountRef = useRef(true);
+  
+  // Aktualisiere storeRef, wenn sich store ändert
   useEffect(() => {
-    if (!store.items.length) return;
-
+    storeRef.current = store;
+  }, [store]);
+  
+  // Lade Marktdaten für die Watchlist-Symbole - nur einmal beim Mounten und wenn sich die Anzahl der Items ändert
+  useEffect(() => {
+    // Debug-Ausgabe: Zeige die aktuelle Anzahl der Elemente in der Watchlist
+    console.log('WatchlistProvider: items aktualisiert, Anzahl:', store.items.length);
+    
+    // Funktion, die die aktuellen Symbole abruft
+    const getCurrentSymbols = () => {
+      // Wichtig: Wir holen die aktuellen Items direkt aus dem Store-State
+      // und nicht aus der store-Referenz, um immer die neuesten Daten zu haben
+      const items = useWatchlistStore.getState().items;
+      
+      if (!items || items.length === 0) {
+        console.log('Keine Items in der Watchlist');
+        return '';
+      }
+      
+      return items
+        .filter(item => item.symbol && typeof item.symbol === 'string')
+        .map(item => item.symbol)
+        .sort() // Sortieren für konsistente Reihenfolge
+        .join(',');
+    };
+    
+    // Marktdaten abrufen
     const fetchMarketData = async () => {
       try {
-        const symbols = store.items.map(item => item.symbol).join(',');
-        const response = await fetch(`/api/market-data/quotes?symbols=${symbols}`);
+        const currentSymbols = getCurrentSymbols();
+        
+        // Wenn keine Symbole vorhanden sind, nichts tun
+        if (!currentSymbols) {
+          console.log('Keine Symbole zum Laden vorhanden');
+          return;
+        }
+        
+        // Vermeide unnötige API-Aufrufe, wenn sich die Symbole nicht geändert haben
+        // und es nicht der erste Aufruf ist
+        if (!isInitialMountRef.current && currentSymbols === previousSymbolsRef.current) {
+          console.log('Symbole unverändert, kein neuer API-Aufruf nötig');
+          return;
+        }
+        
+        console.log('Lade Marktdaten für Symbole:', currentSymbols);
+        previousSymbolsRef.current = currentSymbols;
+        isInitialMountRef.current = false;
+        
+        // Verwende die aktuelle URL-Basis für API-Aufrufe
+        const baseUrl = window.location.origin;
+        console.log('Lade Marktdaten von:', `${baseUrl}/api/market-data/quotes?symbols=${currentSymbols}`);
+        
+        const response = await fetch(`${baseUrl}/api/market-data/quotes?symbols=${currentSymbols}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          credentials: 'include' // Wichtig für Authentifizierung
+        });
         
         if (!response.ok) {
-          throw new Error('Fehler beim Laden der Marktdaten');
+          throw new Error(`Fehler beim Laden der Marktdaten: ${response.status}`);
         }
-
+  
         const data = await response.json();
-        if (!Array.isArray(data)) return;
-
+        if (!Array.isArray(data)) {
+          console.warn('Unerwartetes Datenformat von der API:', data);
+          return;
+        }
+        
+        console.log('Marktdaten erhalten:', data.length, 'Einträge');
+  
         // Aktualisiere die Items mit den aktuellen Marktdaten
-        store.setItems(
-          store.items.map(item => {
-            const quote = data.find(q => q.symbol === item.symbol);
-            return {
-              ...item,
-              price: quote?.price || 0,
-              change: quote?.changesPercentage || 0
-            };
-          })
-        );
+        // Wichtig: Wir verwenden getState().updateItemsWithMarketData, um direkt auf die Methode zuzugreifen
+        // ohne einen erneuten Render auszulösen
+        useWatchlistStore.getState().updateItemsWithMarketData(data);
       } catch (error) {
         console.error('Fehler beim Laden der Marktdaten:', error);
       }
     };
-
+    
     // Initial laden
     fetchMarketData();
-
+    
     // Alle 60 Sekunden aktualisieren
-    const interval = setInterval(fetchMarketData, 60000);
-
-    return () => clearInterval(interval);
-  }, [store, store.items]);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured) {
-      console.warn('Supabase ist nicht konfiguriert. Watchlist-Sync deaktiviert.');
-      return;
-    }
-
-    // Überprüfen der Supabase-Verbindung
-    const checkConnection = async () => {
-      if (!isSignedIn) {
-        console.log('Benutzer ist nicht angemeldet');
-        return true; // Erlaube Zugriff auf öffentliche Daten
-      }
-
-      try {
-        // Hole den aktuellen Clerk Session Token
-        let token;
-        try {
-          token = await getToken({ template: 'supabase' });
-        } catch (error) {
-          console.warn('Konnte keinen Auth Token abrufen:', error);
-          return true; // Erlaube Zugriff auf öffentliche Daten
-        }
-
-        // Erstelle einen authentifizierten Client
-        const client = token ? createClientWithAuth(token) : supabase;
-
-        // Teste die Verbindung mit einer einfachen Query
-        const { data, error } = await client
-          .from('watchlists')
-          .select('id')
-          .limit(1);
-
-        if (error) {
-          if (error.code === 'PGRST116') {
-            console.log('Keine Watchlists gefunden - das ist OK für neue Benutzer');
-            return true;
-          }
-
-          console.error('Supabase Verbindungsfehler:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          });
-          throw error;
-        }
-
-        console.log('Supabase Verbindung erfolgreich:', { data });
-        return true;
-      } catch (error: any) {
-        console.error('Supabase Verbindungsfehler:', {
-          name: error.name,
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        
-        // Benutzerfreundliche Fehlermeldung
-        let errorMessage = 'Verbindung zur Datenbank fehlgeschlagen';
-        if (error.code === '42501') {
-          errorMessage = 'Keine Berechtigung für diese Aktion';
-        } else if (error.code === '3000') {
-          errorMessage = 'Bitte melden Sie sich an';
-        }
-        
-        toast.error(errorMessage);
-        return true; // Trotzdem weitermachen, um öffentliche Daten anzuzeigen
+    intervalRef.current = setInterval(fetchMarketData, 60000);
+    
+    // Aufräumen beim Unmount oder wenn sich die Anzahl der Items ändert
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
+  }, [store.items.length]); // Aktualisieren, wenn sich die Anzahl der Items ändert
 
-    // Lade initiale Watchlist-Daten
-    const loadWatchlistData = async () => {
-      if (!isSupabaseConfigured) {
-        console.warn('Supabase ist nicht konfiguriert');
-        store.setItems([]);
+  // Lade die Watchlist aus der API
+  useEffect(() => {
+    const loadWatchlist = async () => {
+      if (!isSignedIn) {
+        console.log('Benutzer ist nicht angemeldet, keine Watchlist geladen');
         return;
       }
 
       try {
-        // Hole den aktuellen Auth Token nur wenn der Benutzer angemeldet ist
-        let token = null;
-        if (isSignedIn) {
-          try {
-            token = await getToken({ template: 'supabase' });
-          } catch (error) {
-            console.warn('Auth Token nicht verfügbar:', error);
-          }
-        }
-
-        // Erstelle den Client mit oder ohne Token
-        const client = token ? createClientWithAuth(token) : supabase;
-
-        try {
-          // Hole die Standard-Watchlist
-          const { data: watchlist, error: watchlistError } = await client
-            .from('watchlists')
-            .select()
-            .eq('name', 'Standard')
-            .maybeSingle();
-
-          if (watchlistError) {
-            console.error('Fehler beim Laden der Watchlist:', watchlistError);
-            store.setItems([]);
-            return;
-          }
-
-          // Wenn keine Watchlist existiert, erstelle eine neue
-          if (!watchlist) {
-            try {
-              const { data: newWatchlist, error: createError } = await client
-                .from('watchlists')
-                .insert({ name: 'Standard' })
-                .select()
-                .maybeSingle();
-
-              if (createError || !newWatchlist) {
-                console.error('Fehler beim Erstellen der Watchlist:', createError);
-                store.setItems([]);
-                return;
-              }
-
-              store.setWatchlistId(newWatchlist.id);
-              store.setItems([]);
-              return;
-            } catch (error) {
-              console.error('Fehler beim Erstellen der Watchlist:', error);
-              store.setItems([]);
-              return;
-            }
-          }
-
-          // Setze die existierende Watchlist
-          store.setWatchlistId(watchlist.id);
-
-          try {
-            // Lade die Items der Watchlist
-            const { data: items, error: itemsError } = await client
-              .from('watchlist_items')
-              .select()
-              .eq('watchlist_id', watchlist.id);
-
-            if (itemsError) {
-              console.error('Fehler beim Laden der Items:', itemsError);
-              store.setItems([]);
-              return;
-            }
-
-            // Konvertiere die Items in das richtige Format
-            store.setItems(
-              (items || []).map((item: WatchlistDBItem) => ({
-                symbol: item.symbol,
-                price: 0,
-                change: 0
-              }))
-            );
-          } catch (error) {
-            console.error('Fehler beim Laden der Items:', error);
-            store.setItems([]);
-          }
-        } catch (error) {
-          console.error('Fehler beim Laden der Watchlist:', error);
-          store.setItems([]);
-        }
-      } catch (error: any) {
-        console.error('Unerwarteter Fehler beim Laden der Watchlist:', error);
-        store.setItems([]);
-      }
-    };
-
-    loadWatchlistData();
-
-    // Subscribe to watchlist changes
-    let channel: any;
-
-    const setupRealtimeSubscription = async () => {
-      let token;
-      try {
-        token = await getToken({ template: 'supabase' });
-      } catch (error) {
-        console.warn('Auth Token nicht verfügbar:', error);
-      }
-
-      // Erstelle den Client mit oder ohne Token
-      const client = token ? createClientWithAuth(token) : supabase;
-
-      channel = client
-        .channel('watchlist_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'watchlist_items',
-            filter: `watchlist_id=eq.${store.currentWatchlistId}`
+        // Verwende die aktuelle URL-Basis für API-Aufrufe, um Probleme mit unterschiedlichen Ports zu vermeiden
+        const baseUrl = window.location.origin;
+        console.log('Lade Watchlist von:', `${baseUrl}/api/watchlist`);
+        
+        const response = await fetch(`${baseUrl}/api/watchlist`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
           },
-          (payload: WatchlistChanges) => {
-            console.log('Watchlist Change:', payload);
-            if (!payload.new || !store.currentWatchlistId) return;
+          credentials: 'include' // Wichtig für Authentifizierung
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Fehler beim Laden der Watchlist: ${response.status} ${response.statusText}`);
+        }
 
-            switch (payload.eventType) {
-              case 'INSERT':
-                store.setItems([
-                  ...store.items,
-                  {
-                    symbol: payload.new.symbol,
-                    price: 0,
-                    change: 0
-                  }
-                ]);
-                break;
-              case 'DELETE':
-                store.setItems(
-                  store.items.filter(item => item.symbol !== payload.old.symbol)
-                );
-                break;
-              default:
-                console.log('Unhandled event type:', payload.eventType);
-            }
+        const data = await response.json();
+        console.log('Watchlist API-Antwort erhalten:', data);
+        
+        if (data && Array.isArray(data.items)) {
+          // Validiere jedes Item in der Watchlist
+          const validItems = data.items.filter((item: any) => 
+            item && 
+            typeof item === 'object' && 
+            item.symbol && 
+            typeof item.symbol === 'string'
+          ) as WatchlistItem[];
+          
+          // Prüfe, ob wir ungültige Items gefiltert haben
+          if (validItems.length !== data.items.length) {
+            console.warn(`Watchlist enthielt ${data.items.length - validItems.length} ungültige Items, die gefiltert wurden`);
           }
-        )
-        .subscribe();
-    };
-
-    setupRealtimeSubscription();
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
+          
+          // Verwende getState().setItems, um direkt auf die Methode zuzugreifen
+          useWatchlistStore.getState().setItems(validItems);
+          console.log('Watchlist erfolgreich geladen:', validItems.length, 'Symbole');
+        } else {
+          console.log('Keine Watchlist-Daten gefunden oder leere Watchlist', data);
+          // Verwende getState().setItems, um direkt auf die Methode zuzugreifen
+          useWatchlistStore.getState().setItems([]);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Watchlist:', error);
+        // Stelle sicher, dass wir trotz Fehler eine leere Watchlist haben
+        useWatchlistStore.getState().setItems([]);
+        toast.error('Fehler beim Laden der Watchlist');
       }
     };
-  }, [store, isSignedIn, getToken]);
+
+    // Nur laden, wenn der Benutzer angemeldet ist
+    if (isSignedIn) {
+      loadWatchlist();
+    }
+  }, [isSignedIn]); // Entferne store aus den Abhängigkeiten, um unnötige Rerenders zu vermeiden
+
+  // Speichere Änderungen an der Watchlist
+  useEffect(() => {
+    // Speichere nur, wenn der Benutzer angemeldet ist und sich die Items geändert haben
+    const saveWatchlist = async () => {
+      if (!isSignedIn) {
+        console.log('Benutzer ist nicht angemeldet, Watchlist wird nicht gespeichert');
+        return;
+      }
+      
+      // Verhindere unnötiges Speichern, wenn die Watchlist leer ist
+      if (store.items.length === 0) {
+        console.log('Watchlist ist leer, kein Speichern erforderlich');
+        return;
+      }
+      
+      try {
+        // Verwende die aktuelle URL-Basis für API-Aufrufe
+        const baseUrl = window.location.origin;
+        
+        // Stelle sicher, dass jedes Item ein gültiges Symbol hat und entferne Duplikate
+        const uniqueSymbols = new Set<string>();
+        const validItems = store.items.filter((item: WatchlistItem) => {
+          if (!item.symbol || typeof item.symbol !== 'string') return false;
+          
+          // Prüfe auf Duplikate (case-insensitive)
+          const normalizedSymbol = item.symbol.toUpperCase();
+          if (uniqueSymbols.has(normalizedSymbol)) return false;
+          
+          uniqueSymbols.add(normalizedSymbol);
+          return true;
+        });
+        
+        // Prüfe, ob Items gefiltert wurden
+        if (validItems.length !== store.items.length) {
+          console.warn(`${store.items.length - validItems.length} ungültige oder doppelte Items wurden vor dem Speichern entfernt`);
+        }
+        
+        // Reduziere die Anzahl der Log-Ausgaben
+        if (validItems.length > 0) {
+          console.log('Speichere Watchlist mit', validItems.length, 'Symbolen');
+        }
+        
+        console.log('Speichere Watchlist an:', `${baseUrl}/api/watchlist`, 'mit', validItems.length, 'Symbolen');
+        
+        const response = await fetch(`${baseUrl}/api/watchlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify({ items: validItems }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server-Antwort:', errorText);
+          throw new Error(`Fehler beim Speichern der Watchlist: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Fehler beim Speichern der Watchlist:', error);
+        toast.error('Fehler beim Speichern der Watchlist');
+      }
+    };
+
+    // Debounce-Funktion mit längerer Verzögerung, um weniger häufig zu speichern
+    const debouncedSave = setTimeout(saveWatchlist, 2000);
+    
+    return () => clearTimeout(debouncedSave);
+  }, [isSignedIn, store.items]);
+
+  // Funktion zum Entfernen eines Symbols aus der Watchlist
+  const removeFromWatchlist = async (symbol: string) => {
+    if (!symbol) {
+      console.error('Kein Symbol zum Entfernen angegeben');
+      return;
+    }
+    
+    // Entferne das Symbol lokal
+    store.removeItem(symbol);
+    toast.success(`${symbol} aus der Watchlist entfernt`);
+
+    if (isSignedIn) {
+      try {
+        console.log(`Lösche Symbol ${symbol} aus der Watchlist auf dem Server`);
+        const response = await fetch(`/api/watchlist?symbol=${symbol}`, {
+          method: 'DELETE',
+          credentials: 'include', // Wichtig: Credentials mitschicken
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Fehler beim Entfernen aus der Watchlist: ${response.status}`, errorText);
+          // Kein Toast hier, da das Symbol bereits lokal entfernt wurde
+        } else {
+          console.log(`Symbol ${symbol} erfolgreich aus der Watchlist entfernt`);
+        }
+      } catch (error) {
+        console.error('Fehler beim Entfernen aus der Watchlist:', error);
+      }
+    } else {
+      console.log('Benutzer nicht angemeldet, Symbol nur lokal entfernt');
+    }
+  };
 
   return (
     <>
+      <WatchlistSidebar onRemove={removeFromWatchlist} />
       {children}
-      <WatchlistSidebar />
     </>
   );
 }

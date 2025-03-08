@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@clerk/nextjs/server";
+import Stripe from 'stripe';
 import { SUBSCRIPTION_PLANS } from "@/config/subscriptions";
+
+// Initialize Stripe client
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-02-24.acacia',
+});
 
 export async function GET() {
   try {
-    const { userId } = auth();
+    const session = await auth();
+    const userId = session?.userId;
     
     if (!userId) {
       return NextResponse.json(
@@ -19,16 +25,13 @@ export async function GET() {
       );
     }
 
-    const supabase = createClient();
+    // Search for customer by userId in metadata
+    const customers = await stripe.customers.search({
+      query: `metadata["userId"]:"${userId}"`,
+    });
 
-    // Hole den Customer für den User
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("stripe_customer_id")
-      .eq("user_id", userId)
-      .single();
-
-    if (!customer?.stripe_customer_id) {
+    // If no customer found
+    if (customers.data.length === 0) {
       return NextResponse.json({
         plan: SUBSCRIPTION_PLANS.FREE,
         isTrialing: false,
@@ -37,15 +40,16 @@ export async function GET() {
       });
     }
 
-    // Hole das aktive Abonnement
-    const { data: subscription } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("customer_id", customer.stripe_customer_id)
-      .eq("status", "active")
-      .single();
+    const customer = customers.data[0];
 
-    if (!subscription) {
+    // Get active subscriptions for the customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'active',
+    });
+
+    // If no active subscriptions found
+    if (subscriptions.data.length === 0) {
       return NextResponse.json({
         plan: SUBSCRIPTION_PLANS.FREE,
         isTrialing: false,
@@ -53,11 +57,14 @@ export async function GET() {
         status: "inactive",
       });
     }
+
+    const subscription = subscriptions.data[0];
+    const priceId = subscription.items.data[0]?.price.id;
 
     return NextResponse.json({
-      plan: subscription.price_id === SUBSCRIPTION_PLANS.PRO ? SUBSCRIPTION_PLANS.PRO : SUBSCRIPTION_PLANS.FREE,
-      isTrialing: subscription.trial_end ? new Date(subscription.trial_end) > new Date() : false,
-      trialEndsAt: subscription.trial_end,
+      plan: priceId === SUBSCRIPTION_PLANS.PRO ? SUBSCRIPTION_PLANS.PRO : SUBSCRIPTION_PLANS.FREE,
+      isTrialing: subscription.trial_end ? new Date(subscription.trial_end * 1000) > new Date() : false,
+      trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
       status: subscription.status,
     });
   } catch (error) {

@@ -5,8 +5,13 @@ import { useWatchlistStore } from '@/stores/use-watchlist-store'
 import { EditableWatchlist } from './editable-watchlist'
 import { Button } from './ui/button'
 
-export function WatchlistSidebar() {
-  const { isOpen, setOpen, items, addSymbol, removeSymbol } = useWatchlistStore()
+interface WatchlistSidebarProps {
+  onRemove?: (symbol: string) => Promise<void>;
+}
+
+export function WatchlistSidebar({ onRemove }: WatchlistSidebarProps = {}) {
+  const store = useWatchlistStore()
+  const { isOpen, setOpen, items } = store
 
   return (
     <motion.div
@@ -46,11 +51,25 @@ export function WatchlistSidebar() {
       >
         <h2 className="font-semibold mb-4">Watchlist</h2>
         {isOpen && (
-          <EditableWatchlist
-            initialItems={items}
-            onAddSymbol={addSymbol}
-            onRemoveSymbol={removeSymbol}
-          />
+          <div>
+            {/* Debug-Anzeige */}
+            <div className="text-xs text-muted-foreground mb-2">
+              {items.length} Symbole in der Watchlist
+            </div>
+            <EditableWatchlist
+              initialItems={items}
+              onAddSymbol={async (symbol) => {
+                console.log('Symbol wird hinzugefügt:', symbol);
+                store.addItem({ symbol });
+                return Promise.resolve();
+              }}
+              onRemoveSymbol={onRemove || (async (symbol) => {
+                console.log('Symbol wird entfernt:', symbol);
+                store.removeItem(symbol);
+                return Promise.resolve();
+              })}
+            />
+          </div>
         )}
       </motion.div>
     </motion.div>

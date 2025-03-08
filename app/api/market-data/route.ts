@@ -84,18 +84,42 @@ export async function GET(): Promise<NextResponse<MarketDataResponse>> {
       avgVolume: quote?.avgVolume
     });
 
+    // Stelle sicher, dass wir gültige Daten zurückgeben
+    const spyQuote = Array.isArray(spyData) && spyData.length > 0 ? spyData[0] : null;
+    const qqqQuote = Array.isArray(qqqData) && qqqData.length > 0 ? qqqData[0] : null;
+    
+    console.log('SPY data:', spyQuote);
+    console.log('QQQ data:', qqqQuote);
+    
     return NextResponse.json({
-      spy: transformQuote(spyData?.[0] || {}),
-      qqq: transformQuote(qqqData?.[0] || {}),
+      spy: transformQuote(spyQuote || { symbol: 'SPY', price: 0, change: 0, changesPercentage: 0, dayHigh: 0, dayLow: 0, volume: 0 }),
+      qqq: transformQuote(qqqQuote || { symbol: 'QQQ', price: 0, change: 0, changesPercentage: 0, dayHigh: 0, dayLow: 0, volume: 0 }),
       watchlist: Array.isArray(watchlistData) ? watchlistData.map(transformQuote) : [],
       news: newsData
     });
   } catch (error) {
     console.error("Error fetching market data:", error);
+    // Gib Standardwerte zurück, um Fehler auf der Client-Seite zu vermeiden
     return NextResponse.json(
       { 
-        spy: {} as FMPQuote,
-        qqq: {} as FMPQuote,
+        spy: { 
+          symbol: 'SPY', 
+          price: 0, 
+          change: 0, 
+          changesPercentage: 0, 
+          dayHigh: 0, 
+          dayLow: 0, 
+          volume: 0 
+        },
+        qqq: { 
+          symbol: 'QQQ', 
+          price: 0, 
+          change: 0, 
+          changesPercentage: 0, 
+          dayHigh: 0, 
+          dayLow: 0, 
+          volume: 0 
+        },
         watchlist: [],
         news: []
       },

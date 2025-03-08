@@ -4,6 +4,7 @@ export interface WatchlistItem {
   symbol: string
   price?: number
   change?: number
+  changesPercentage?: number
 }
 
 export interface Quote extends FMPQuote {}

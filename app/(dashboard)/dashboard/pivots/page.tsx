@@ -1,10 +1,8 @@
-import { Suspense } from 'react';
+// React imports
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchSymbol } from '@/components/search-symbol';
-import { type Quote, type HistoricalPrice } from '@/lib/fmp';
-import { calculateTimeBasedPivots, calculateDeMarkPivots } from '@/lib/indicators';
-
-import { type StandardPivotLevels } from '@/lib/indicators';
+import { type HistoricalPrice } from '@/lib/fmp';
+import { calculateTimeBasedPivots, calculateDeMarkPivots, type DeMarkPivotLevels, type StandardPivotLevels } from '@/lib/indicators';
 
 // Calculate the number of times a price level was touched
 function getTouches(prices: HistoricalPrice[], level: number): string {
@@ -35,16 +33,15 @@ function getTouches(prices: HistoricalPrice[], level: number): string {
 export default async function PivotsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const params = await Promise.resolve(searchParams);
   const symbolParam = (params.symbol as string) || 'AAPL';
-  const timeframe = (params.timeframe as string) || 'daily';
 
   try {
     // Fetch data from FMP API
     const [quote, historicalData] = await Promise.all([
       // Get current quote
-      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbolParam}?apikey=${process.env.FMP_API_KEY}`)
+      fetch(`https://financialmodelingprep.com/api/v3/quote/${symbolParam}?apikey=${process.env.NEXT_PUBLIC_FMP_API_KEY}`)
         .then(res => res.json()),
       // Get historical data - ensure we get enough data for yearly calculations
-      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/${symbolParam}?timeseries=365&apikey=${process.env.FMP_API_KEY}`)
+      fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/${symbolParam}?timeseries=365&apikey=${process.env.NEXT_PUBLIC_FMP_API_KEY}`)
         .then(res => res.json())
     ]);
 

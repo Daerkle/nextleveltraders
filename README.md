@@ -1,120 +1,108 @@
 # NextLevelTraders
 
-Eine moderne Trading-Plattform mit fortgeschrittenen Analyse- und Lernfunktionen.
+Eine fortschrittliche Trading-Plattform mit Premium-Features und Subscription-Management.
 
-## 🚀 Quick Start
+## Features
 
+- Echtzeit-Marktdaten
+- Technische Analyse-Tools
+- Premium Trading-Indikatoren
+- Watchlist-Management
+- Subscription-System mit Trial-Periode
+
+## Subscription Plans
+
+- **Trial**: 4 Tage kostenlos mit vollem Zugriff auf alle Features
+- **Pro Monatlich**: 49€/Monat
+- **Pro Jährlich**: 499,80€/Jahr (15% Rabatt)
+
+## Technischer Stack
+
+- Next.js 14 mit App Router
+- TypeScript
+- Supabase für Datenbank und Auth
+- Stripe für Payments
+- TailwindCSS für Styling
+- Clerk für User Management
+
+## Erste Schritte
+
+1. Repository klonen:
 ```bash
-# Repository klonen
 git clone https://github.com/yourusername/nextleveltraders.git
 cd nextleveltraders
+```
 
-# Dependencies installieren
+2. Dependencies installieren:
+```bash
 npm install
+```
 
-# Umgebungsvariablen einrichten
-npm run setup
+3. Umgebungsvariablen einrichten:
+```bash
+cp .env.example .env.local
+```
 
-# Development Server starten
+4. Umgebungsvariablen in `.env.local` konfigurieren:
+```env
+# Stripe Configuration
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID=
+NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID=
+NEXT_PUBLIC_STRIPE_PRODUCT_ID=
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# Clerk Configuration
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+```
+
+5. Stripe Produkte und Preise einrichten:
+```bash
+npm run setup:stripe
+```
+
+6. Entwicklungsserver starten:
+```bash
 npm run dev
 ```
 
-Die Anwendung ist dann unter [http://localhost:3000](http://localhost:3000) verfügbar.
+## Stripe Webhook Setup
 
-## 🛠️ Technologie-Stack
-
-- **Framework:** [Next.js 14](https://nextjs.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Authentication:** [Clerk](https://clerk.dev/)
-- **Database:** [PostgreSQL](https://www.postgresql.org/)
-- **ORM:** [Prisma](https://www.prisma.io/)
-- **Testing:** [Jest](https://jestjs.io/) + [Testing Library](https://testing-library.com/)
-- **Linting:** [ESLint](https://eslint.org/)
-- **Formatting:** [Prettier](https://prettier.io/)
-
-## 📁 Projektstruktur
-
-```
-nextleveltraders/
-├── app/                # Next.js App Router
-├── components/         # React Komponenten
-├── config/            # Konfigurationsdateien
-├── hooks/             # Custom React Hooks
-├── lib/               # Utility Funktionen
-├── prisma/            # Datenbank Schema
-├── public/            # Statische Dateien
-├── scripts/           # Build & Setup Scripts
-├── styles/            # Globale Styles
-└── types/             # TypeScript Typdefinitionen
-```
-
-## 🔧 Development
-
-### Voraussetzungen
-
-- Node.js >= 18
-- npm >= 9
-- PostgreSQL >= 14
-
-### Verfügbare Scripts
-
+1. Stripe CLI installieren
+2. Webhook-Forwarding starten:
 ```bash
-# Development
-npm run dev           # Startet den Development Server
-npm run build        # Erstellt den Production Build
-npm run start        # Startet den Production Server
-
-# Testing
-npm run test         # Führt Tests aus
-npm run test:watch   # Führt Tests im Watch-Mode aus
-npm run test:ci      # Führt Tests für CI aus
-
-# Code Quality
-npm run lint         # Führt ESLint aus
-npm run format       # Formatiert Code mit Prettier
-npm run typecheck    # Prüft TypeScript Typen
-npm run validate     # Führt alle Checks aus
-
-# Datenbank
-npm run db:migrate   # Führt Datenbankmigrationen aus
-npm run db:seed      # Füllt die Datenbank mit Testdaten
+stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-### Environment Variablen
+## Datenbank-Setup
 
-Kopieren Sie `.env.local.example` nach `.env.local` und füllen Sie die benötigten Werte aus:
-
+1. Supabase-Projekt erstellen
+2. SQL-Migrations ausführen:
 ```bash
-npm run setup
+cd supabase/migrations
 ```
 
-## 🧪 Testing
+## Deployment
 
-Wir verwenden Jest für Unit- und Integrationstests. Die Tests befinden sich neben den Komponenten mit der Endung `.test.ts(x)`.
-
+1. Vercel-Projekt einrichten
+2. Umgebungsvariablen in Vercel konfigurieren
+3. Deployment starten:
 ```bash
-# Alle Tests ausführen
-npm run test
-
-# Tests im Watch-Mode
-npm run test:watch
-
-# Test Coverage Report erstellen
-npm run test:coverage
+vercel deploy
 ```
 
-## 📚 Dokumentation
+## Entwicklung
 
-- [Projekt Setup](docs/setup.md)
-- [Architektur](docs/architecture.md)
-- [API Referenz](docs/api.md)
-- [Deployment](docs/deployment.md)
-- [Contribution Guide](docs/contributing.md)
+- TypeScript für Type Safety
+- ESLint & Prettier für Code-Formatierung
+- Husky für Git Hooks
+- Jest für Tests
 
-## 🔒 Security
+## Lizenz
 
-Sicherheitslücken bitte vertraulich an security@nextleveltraders.com melden.
-
-## 📄 Lizenz
-
-[MIT](LICENSE.md) © NextLevelTraders
+MIT

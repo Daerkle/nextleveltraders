@@ -3,8 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2022-11-15',
-  typescript: true,
+  apiVersion: '2025-02-24.acacia',
 });
 
 const PRO_PRODUCT_ID = process.env.STRIPE_PRO_PRODUCT_ID;

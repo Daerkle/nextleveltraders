@@ -1,0 +1,10 @@
+{
+  "/api/watchlist/route": "app/api/watchlist/route.js",
+  "/api/subscription/status/route": "app/api/subscription/status/route.js",
+  "/api/market-data/quotes/route": "app/api/market-data/quotes/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js",
+  "/(dashboard)/dashboard/knowledge/page": "app/(dashboard)/dashboard/knowledge/page.js",
+  "/(dashboard)/dashboard/knowledge/technische-analyse/page": "app/(dashboard)/dashboard/knowledge/technische-analyse/page.js",
+  "/(dashboard)/dashboard/chat/page": "app/(dashboard)/dashboard/chat/page.js"
+}

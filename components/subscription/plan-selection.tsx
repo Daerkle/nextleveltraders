@@ -1,154 +1,135 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Check, X } from "lucide-react"
-import { FEATURES, PLANS, SUBSCRIPTION_PLANS } from "@/config/subscriptions"
+import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import { Check } from "lucide-react"
+import { GlowingEffect } from "@/components/ui/glowing-effect"
+import { formatCurrency } from "@/lib/utils"
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-  }).format(price / 100)
+interface Plan {
+  id: string
+  name: string
+  description: string
+  price: number
+  interval: string
+  currency: string
+  features: string[]
 }
 
-export function PlanSelection() {
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+interface PlanSelectionProps {
+  onPlanSelect?: (priceId: string) => void
+  className?: string
+}
 
-  const handleUpgrade = async () => {
-    setIsLoading(true)
+export function PlanSelection({ onPlanSelect, className }: PlanSelectionProps) {
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const { isSignedIn } = useUser()
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch('/api/stripe/plans')
+        const data = await response.json()
+        setPlans(data)
+      } catch (error) {
+        console.error('Fehler beim Laden der Pläne:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlans()
+  }, [])
+
+  const handleSelect = async (priceId: string) => {
+    if (!isSignedIn) {
+      window.location.href = '/sign-in'
+      return
+    }
+
     try {
-      const response = await fetch("/api/stripe/create-checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          plan: SUBSCRIPTION_PLANS.PRO,
-        }),
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId })
       })
-      
-      const data = await response.json()
-      window.location.href = data.url
+
+      const { url } = await response.json()
+      window.location.href = url
     } catch (error) {
-      console.error("Fehler beim Erstellen der Checkout-Session:", error)
-    } finally {
-      setIsLoading(false)
+      console.error('Fehler beim Erstellen der Checkout-Session:', error)
     }
   }
 
+  if (loading) {
+    return <div className="flex justify-center p-8">Lädt Preise...</div>
+  }
+
   return (
-    <div className="space-y-8">
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Free Plan */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Basis Plan</CardTitle>
-                <CardDescription>Perfekt zum Kennenlernen der Plattform</CardDescription>
-              </div>
-              <Badge variant="secondary" className="ml-2">
-                Kostenlos
-              </Badge>
+    <div className={cn("grid gap-8 lg:grid-cols-2", className)}>
+      {plans.map((plan) => (
+        <Card key={plan.id} className="relative p-6">
+          {plan.interval === 'year' && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-full">
+                15% Rabatt
+              </span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {Object.entries(FEATURES).map(([key, value]) => (
-                <li key={key} className="flex items-center">
-                  {value.free ? (
-                    <Check className="h-4 w-4 mr-2 text-green-500" />
-                  ) : (
-                    <X className="h-4 w-4 mr-2 text-red-500" />
-                  )}
-                  <span>{typeof value.free === "string" ? value.free : "Nicht verfügbar"}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" disabled>
-              Aktueller Plan
-            </Button>
-          </CardFooter>
-        </Card>
+          )}
 
-        {/* Pro Plan */}
-        <Card className="relative overflow-hidden border-primary">
-          <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-sm">
-            4 Tage kostenlos testen
+          <div className="flex flex-col h-full">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold">{plan.name}</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                {plan.description}
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-baseline">
+                <span className="text-4xl font-bold">
+                  {formatCurrency(plan.price / 100, plan.currency)}
+                </span>
+                <span className="ml-1 text-sm text-muted-foreground">
+                  /{plan.interval}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                4 Tage kostenlose Testphase
+              </p>
+            </div>
+
+            <div className="flex-grow">
+              <ul className="space-y-2">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-6">
+              <GlowingEffect className="w-full">
+                <Button
+                  className="w-full"
+                  onClick={() => handleSelect(plan.id)}
+                >
+                  {isSignedIn
+                    ? 'Jetzt 4 Tage kostenlos testen'
+                    : 'Jetzt registrieren'
+                  }
+                </Button>
+              </GlowingEffect>
+            </div>
           </div>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Pro Plan</CardTitle>
-                <CardDescription>Vollständiger Zugriff auf alle Trading-Features</CardDescription>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">{formatPrice(PLANS.pro.price)}</div>
-                <div className="text-sm text-muted-foreground">pro Monat</div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {Object.entries(FEATURES).map(([key, value]) => (
-                <li key={key} className="flex items-center">
-                  <Check className="h-4 w-4 mr-2 text-green-500" />
-                  <span>{value.pro}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              className="w-full" 
-              onClick={handleUpgrade}
-              disabled={isLoading}
-            >
-              {isLoading ? "Wird verarbeitet..." : "Jetzt upgraden"}
-            </Button>
-          </CardFooter>
         </Card>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Häufig gestellte Fragen</h2>
-        <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Wie funktioniert die 4-tägige Testphase?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Nach dem Upgrade auf Pro kannst du alle Premium-Features 4 Tage lang kostenlos testen. 
-                 Wenn du nicht zufrieden bist, kannst du jederzeit vor Ablauf der Testphase kündigen.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Wann wird mir der Betrag berechnet?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Die erste Zahlung wird erst nach Ablauf der 4-tägigen Testphase fällig. 
-                 Danach wird der Betrag monatlich automatisch abgebucht.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Wie kann ich kündigen?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Du kannst dein Pro-Abonnement jederzeit in den Einstellungen oder über den Support kündigen. 
-                 Nach der Kündigung behältst du noch bis zum Ende des bezahlten Zeitraums Zugriff auf alle Pro-Features.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }

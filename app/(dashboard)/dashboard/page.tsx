@@ -56,10 +56,10 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {spy.change > 0 ? 'Bullisch' : 'Bärisch'}
+              {spy && spy.changesPercentage > 0 ? 'Bullisch' : 'Bärisch'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {spy.change > 0 ? '+' : ''}{spy.change.toFixed(2)}% im Tagesvergleich
+              {spy && spy.changesPercentage > 0 ? '+' : ''}{spy && spy.changesPercentage ? spy.changesPercentage.toFixed(2) : '0.00'}% im Tagesvergleich
             </p>
           </CardContent>
         </Card>
@@ -71,10 +71,10 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {qqq.change > 0 ? 'Bullisch' : 'Bärisch'}
+              {qqq && qqq.changesPercentage > 0 ? 'Bullisch' : 'Bärisch'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {qqq.change > 0 ? '+' : ''}{qqq.change.toFixed(2)}% im Tagesvergleich
+              {qqq && qqq.changesPercentage > 0 ? '+' : ''}{qqq && qqq.changesPercentage ? qqq.changesPercentage.toFixed(2) : '0.00'}% im Tagesvergleich
             </p>
           </CardContent>
         </Card>
@@ -132,8 +132,8 @@ export default async function DashboardPage() {
                 {watchlist.map((stock: any) => (
                   <div key={stock.symbol} className="flex justify-between items-center pb-2 border-b">
                     <div className="font-medium">{stock.symbol}</div>
-                    <div className={stock.change > 0 ? 'text-green-600' : 'text-red-600'}>
-                      ${stock.price.toFixed(2)} ({stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)}%)
+                    <div className={stock.changesPercentage > 0 ? 'text-green-600' : 'text-red-600'}>
+                      ${stock.price ? stock.price.toFixed(2) : '0.00'} ({stock.changesPercentage > 0 ? '+' : ''}{stock.changesPercentage ? stock.changesPercentage.toFixed(2) : '0.00'}%)
                     </div>
                   </div>
                 ))}

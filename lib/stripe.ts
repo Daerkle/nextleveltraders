@@ -5,93 +5,120 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2022-11-15',
-  typescript: true,
+  apiVersion: '2025-02-24.acacia',
 })
 
-export const PLANS = {
-  FREE: {
-    name: 'Free',
-    description: 'Grundlegende Features für Einsteiger',
-    price: 0,
-    features: [
-      'Basis Marktdaten',
-      'Limitierte API Aufrufe',
-      'Grundlegende Analyse Tools'
-    ],
-    priceId: process.env.STRIPE_FREE_PRICE_ID,
-  },
-  PRO: {
-    name: 'Pro',
-    description: 'Erweiterte Features für aktive Trader',
-    price: 29.99,
-    features: [
-      'Erweiterte Marktdaten',
-      'Unbegrenzte API Aufrufe',
-      'Alle Analyse Tools',
-      'Premium Support'
-    ],
-    priceId: process.env.STRIPE_PRO_PRICE_ID,
+export const MONTHLY_PRICE = 4900 // 49€ in Cents
+export const YEARLY_PRICE = Math.floor(MONTHLY_PRICE * 12 * 0.85) // 15% Rabatt
+
+export async function setupSubscriptionPlans() {
+  // Pro Plan Produkt erstellen
+  const product = await stripe.products.create({
+    name: 'NextLevelTraders Pro',
+    description: 'Zugang zu allen Premium-Features',
+    metadata: {
+      features: [
+        'Unbegrenzte API Aufrufe',
+        'Alle Trading Tools',
+        'Premium Support',
+        'Echtzeit-Marktdaten',
+        'Erweiterte Analysetools',
+        'Technische Indikatoren'
+      ].join(',')
+    }
+  })
+
+  // Monatlicher Preis
+  const monthlyPrice = await stripe.prices.create({
+    product: product.id,
+    unit_amount: MONTHLY_PRICE,
+    currency: 'eur',
+    recurring: {
+      interval: 'month'
+    },
+    metadata: {
+      type: 'monthly'
+    }
+  })
+
+  // Jährlicher Preis
+  const yearlyPrice = await stripe.prices.create({
+    product: product.id,
+    unit_amount: YEARLY_PRICE,
+    currency: 'eur',
+    recurring: {
+      interval: 'year'
+    },
+    metadata: {
+      type: 'yearly'
+    }
+  })
+
+  return {
+    product,
+    monthlyPrice,
+    yearlyPrice
   }
 }
 
-export const getStripeCustomer = async ({
-  stripe,
-  userId,
-  email,
-}: {
-  stripe: Stripe
+export async function getSubscriptionPlans() {
+  const prices = await stripe.prices.list({
+    active: true,
+    type: 'recurring',
+    expand: ['data.product']
+  })
+
+  const plans = prices.data.map(price => {
+    const product = price.product as Stripe.Product
+    const features = product.metadata.features?.split(',') || []
+
+    return {
+      id: price.id,
+      name: product.name,
+      description: product.description || '',
+      price: price.unit_amount || 0,
+      interval: price.recurring?.interval || 'month',
+      currency: price.currency,
+      features,
+      metadata: price.metadata
+    }
+  })
+
+  return plans
+}
+
+interface CreateCheckoutSessionParams {
+  customerId: string
+  priceId: string
   userId: string
-  email?: string
-}) => {
-  // Suche nach Kunden mit der entsprechenden user_id in den Metadaten
-  const customers = await stripe.customers.search({
-    query: `metadata['user_id']:'${userId}'`,
-    limit: 1,
+  mode?: Stripe.Checkout.Session.Mode
+  successUrl: string
+  cancelUrl: string
+  trialDays?: number
+}
+
+export const createCheckoutSession = async ({
+  customerId,
+  priceId,
+  userId,
+  mode = 'subscription',
+  successUrl,
+  cancelUrl,
+  trialDays = 4
+}: CreateCheckoutSessionParams) => {
+  return await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode,
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    subscription_data: {
+      trial_period_days: trialDays,
+      metadata: { userId }
+    },
+    metadata: { userId }
   })
-
-  let customer = customers.data[0]
-
-  if (!customer && email) {
-    // Erstelle einen neuen Kunden, wenn keiner gefunden wurde
-    customer = await stripe.customers.create({
-      email,
-      metadata: {
-        user_id: userId,
-      },
-    })
-  }
-
-  return customer
-}
-
-export const getStripeSubscription = async ({
-  stripe,
-  subscriptionId,
-}: {
-  stripe: Stripe
-  subscriptionId: string
-}) => {
-  return await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ['items.data.price'],
-  })
-}
-
-export type StripeSubscriptionWithPrice = Awaited<
-  ReturnType<typeof getStripeSubscription>
->
-
-export const formatStripePrice = (price: number) => {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(price / 100)
-}
-
-export const getSubscriptionPlan = async (subscriptionId: string) => {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-  return subscription
 }
 
 export const createCustomerPortalSession = async (customerId: string) => {

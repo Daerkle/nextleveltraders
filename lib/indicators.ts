@@ -107,7 +107,7 @@ export function calculateEMACloud(
   const slowEMA = calculateEMA(closePrices, slowPeriod);
   
   // Find crossovers
-  const crossovers = [];
+  const crossovers: { date: string; type: 'bullish' | 'bearish' }[] = [];
   for (let i = 1; i < prices.length; i++) {
     const prevFast = fastEMA[i - 1];
     const prevSlow = slowEMA[i - 1];
@@ -188,8 +188,34 @@ export function calculateTimeBasedPivots(
       s2: Number(s2.toFixed(2)),
       s3: Number(s3.toFixed(2))
     };
+  } else if (pivotType === 'demark') {
+    // DeMark Pivot Points
+    let x = 0;
+    // Use the first price in the relevant prices for open price
+    const periodOpen = relevantPrices[0].open;
+    if (periodClose < periodOpen) {
+      x = periodHigh + (2 * periodLow) + periodClose;
+    } else if (periodClose > periodOpen) {
+      x = (2 * periodHigh) + periodLow + periodClose;
+    } else {
+      x = periodHigh + periodLow + (2 * periodClose);
+    }
+    
+    const demarkPP = x / 4;
+    const r1 = x / 2 - periodLow;
+    const s1 = x / 2 - periodHigh;
+    
+    return {
+      x: Number(x.toFixed(2)),
+      r1: Number(r1.toFixed(2)),
+      pp: Number(demarkPP.toFixed(2)),
+      s1: Number(s1.toFixed(2))
+    } as DeMarkPivotLevels;
   }
-  }
+  
+  // Default return for type safety
+  return { r3: 0, r2: 0, r1: 0, pp: 0, s1: 0, s2: 0, s3: 0 };
+}
 
 // Legacy-Funktion für Kompatibilität
 export function calculatePivots(prices: HistoricalPrice[]): PivotLevels {
@@ -197,9 +223,10 @@ export function calculatePivots(prices: HistoricalPrice[]): PivotLevels {
   return levels;
 }
 
-export function getRipsterStatus(cloud5_12: EMACloud, cloud34_50: EMACloud): {
-  shortTerm: 'bullish' | 'bearish' | 'neutral';
-  longTerm: 'bullish' | 'bearish' | 'neutral';
+export function getTrendStatus(cloud5_12: EMACloud, cloud34_50: EMACloud): {
+  intradayTrend: 'bullish' | 'bearish' | 'neutral';
+  swingTrend: 'bullish' | 'bearish' | 'neutral';
+  positionTrend: 'bullish' | 'bearish' | 'neutral';
   strength: number;
 } {
   const latest5_12 = {
@@ -212,21 +239,49 @@ export function getRipsterStatus(cloud5_12: EMACloud, cloud34_50: EMACloud): {
     slow: cloud34_50.slow[cloud34_50.slow.length - 1]
   };
   
-  const shortTerm = latest5_12.fast > latest5_12.slow ? 'bullish' : 
-                    latest5_12.fast < latest5_12.slow ? 'bearish' : 'neutral';
-                    
-  const longTerm = latest34_50.fast > latest34_50.slow ? 'bullish' : 
-                   latest34_50.fast < latest34_50.slow ? 'bearish' : 'neutral';
+  // Intraday Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+  let intradayTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
+  
+  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+    intradayTrend = 'bullish';
+  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+    intradayTrend = 'bearish';
+  } else {
+    intradayTrend = 'neutral';
+  }
+  
+  // Swing Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+  let swingTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
+  
+  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+    swingTrend = 'bullish';
+  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+    swingTrend = 'bearish';
+  } else {
+    swingTrend = 'neutral';
+  }
+  
+  // Position Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+  let positionTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
+  
+  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+    positionTrend = 'bullish';
+  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+    positionTrend = 'bearish';
+  } else {
+    positionTrend = 'neutral';
+  }
   
   // Calculate trend strength (0-100)
-  const shortTermDiff = Math.abs(latest5_12.fast - latest5_12.slow) / latest5_12.slow * 100;
-  const longTermDiff = Math.abs(latest34_50.fast - latest34_50.slow) / latest34_50.slow * 100;
+  const intradayDiff = Math.abs(latest5_12.fast - latest5_12.slow) / latest5_12.slow * 100;
+  const positionDiff = Math.abs(latest34_50.fast - latest34_50.slow) / latest34_50.slow * 100;
   
-  const strength = Math.min(100, Math.round((shortTermDiff + longTermDiff) * 5));
+  const strength = Math.min(100, Math.round((intradayDiff + positionDiff) * 5));
   
   return {
-    shortTerm,
-    longTerm,
+    intradayTrend,
+    swingTrend,
+    positionTrend,
     strength
   };
 }

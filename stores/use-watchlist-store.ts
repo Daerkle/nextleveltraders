@@ -1,166 +1,88 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { createClientWithAuth } from '@/lib/supabase'
 import { type StateCreator } from 'zustand'
 import { WatchlistItem } from '@/types/watchlist'
-import { supabase } from '@/lib/supabase'
 
 interface WatchlistState {
   items: WatchlistItem[]
   isOpen: boolean
-  currentWatchlistId: string | null
   setOpen: (open: boolean) => void
-  setWatchlistId: (id: string) => void
   setItems: (items: WatchlistItem[]) => void
-  addSymbol: (symbol: string) => Promise<void>
-  removeSymbol: (symbol: string) => Promise<void>
-}
-
-interface WatchlistDBItem {
-  id: string
-  watchlist_id: string
-  symbol: string
-  created_at: string
-}
-
-interface WatchlistDB {
-  id: string
-  name: string
-  created_at: string
-  updated_at: string
+  addItem: (item: WatchlistItem) => void
+  removeItem: (symbol: string) => void
+  updateItemsWithMarketData: (marketData: any[]) => void
 }
 
 type WatchlistStore = StateCreator<
   WatchlistState,
   [],
-  [],
+  [['zustand/persist', unknown]],
   WatchlistState
 >
-
-const DEFAULT_WATCHLIST_NAME = "Standard"
 
 const createWatchlistStore: WatchlistStore = (set, get) => ({
   items: [],
   isOpen: false,
-  currentWatchlistId: null,
   setOpen: (open: boolean) => set({ isOpen: open }),
-  setWatchlistId: (id: string) => set({ currentWatchlistId: id }),
   setItems: (items: WatchlistItem[]) => set({ items }),
-  addSymbol: async (symbol: string, token?: string) => {
-    const { currentWatchlistId } = get()
-    
-    try {
-      // Nutze den übergebenen Token oder den anonymen Client
-      const supabaseClient = token ? createClientWithAuth(token) : supabase;
-
-      // Erstelle eine Standard-Watchlist, wenn keine existiert
-      let watchlistId = currentWatchlistId
-      if (!watchlistId) {
-        const { data: watchlist, error: watchlistError } = await supabaseClient
-          .from('watchlists')
-          .insert({
-            name: DEFAULT_WATCHLIST_NAME
-          })
-          .select()
-          .single()
-
-        if (watchlistError) {
-          if (watchlistError.code === 'PGRST116') {
-            console.log('Keine Watchlists gefunden - erstelle neue');
-          } else {
-            console.error('Watchlist Erstellungsfehler:', watchlistError)
-            throw watchlistError
-          }
-        }
-        if (!watchlist) throw new Error('Keine Watchlist erstellt')
-        
-        watchlistId = (watchlist as WatchlistDB).id
-        set({ currentWatchlistId: watchlistId })
-      }
-
-      // Füge das Symbol zur Watchlist hinzu
-      const { data, error } = await supabaseClient
-        .from('watchlist_items')
-        .insert({ 
-          watchlist_id: watchlistId,
-          symbol: symbol.toUpperCase()
-        })
-        .select()
-        .single()
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.log('Symbol bereits in Watchlist');
-          return;
-        }
-        console.error('Symbol Hinzufügungsfehler:', error)
-        throw error
-      }
-      if (!data) throw new Error('Symbol konnte nicht hinzugefügt werden')
-
-      const newItem = data as WatchlistDBItem
-
-      set((state: WatchlistState) => ({
-        items: [...state.items, { 
-          symbol: newItem.symbol, 
-          price: 0, 
-          change: 0 
+  addItem: (item: WatchlistItem) => {
+    set((state: WatchlistState) => {
+      // Prüfe, ob das Symbol bereits in der Watchlist ist
+      const exists = state.items.some(existingItem => 
+        existingItem.symbol === item.symbol
+      );
+      
+      // Wenn es bereits existiert, nicht erneut hinzufügen
+      if (exists) return state;
+      
+      return {
+        items: [...state.items, {
+          ...item,
+          // Stelle sicher, dass das Symbol immer in Großbuchstaben ist
+          symbol: item.symbol.toUpperCase()
         }]
-      }))
-    } catch (error: any) {
-      console.error('Fehler beim Hinzufügen des Symbols:', {
-        message: error.message,
-        code: error.code,
-        details: error.details
-      })
-      // Lokale Aktualisierung trotz Fehler
-      set((state: WatchlistState) => ({
-        items: [...state.items, { 
-          symbol: symbol.toUpperCase(), 
-          price: 0, 
-          change: 0 
-        }]
-      }))
-    }
+      };
+    });
   },
-  removeSymbol: async (symbol: string, token?: string) => {
-    const { currentWatchlistId } = get()
+  removeItem: (symbol: string) => {
+    set((state: WatchlistState) => ({
+      items: state.items.filter((item) => item.symbol !== symbol)
+    }))
+  },
+  // Neue Methode zum Aktualisieren der Marktdaten ohne die gesamte Liste neu zu setzen
+  updateItemsWithMarketData: (marketData: any[]) => {
+    if (!Array.isArray(marketData) || !marketData.length) return;
     
-    try {
-      // Nutze den übergebenen Token oder den anonymen Client
-      const supabaseClient = token ? createClientWithAuth(token) : supabase;
-
-      const { error } = await supabaseClient
-        .from('watchlist_items')
-        .delete()
-        .match({ 
-          watchlist_id: currentWatchlistId,
-          symbol 
-        })
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.log('Symbol bereits entfernt');
-        } else {
-          console.error('Symbol Entfernungsfehler:', error)
-          throw error
+    // Aktualisiere nur die Preisdaten, ohne die Liste selbst zu ändern
+    const currentItems = [...get().items];
+    let hasChanges = false;
+    
+    for (let i = 0; i < currentItems.length; i++) {
+      const item = currentItems[i];
+      const quote = marketData.find(q => q.symbol === item.symbol);
+      
+      if (quote) {
+        // Nur aktualisieren, wenn sich die Daten geändert haben
+        const newPrice = quote.price || item.price || 0;
+        const newChange = quote.change || item.change || 0;
+        const newChangesPercentage = quote.changesPercentage || item.changesPercentage || 0;
+        
+        if (item.price !== newPrice || item.change !== newChange || item.changesPercentage !== newChangesPercentage) {
+          currentItems[i] = {
+            ...item,
+            price: newPrice,
+            change: newChange,
+            changesPercentage: newChangesPercentage
+          };
+          hasChanges = true;
         }
       }
-
-      // Lokale Aktualisierung in jedem Fall
-      set((state: WatchlistState) => ({
-        items: state.items.filter((item) => item.symbol !== symbol)
-      }))
-    } catch (error: any) {
-      console.error('Fehler beim Entfernen des Symbols:', {
-        message: error.message,
-        code: error.code,
-        details: error.details
-      })
-      // Lokale Aktualisierung trotz Fehler
-      set((state: WatchlistState) => ({
-        items: state.items.filter((item) => item.symbol !== symbol)
-      }))
+    }
+    
+    // Nur aktualisieren, wenn es tatsächliche Änderungen gab
+    if (hasChanges) {
+      console.log('Marktdaten aktualisiert für', marketData.length, 'Symbole');
+      set({ items: currentItems });
     }
   }
 })
@@ -171,10 +93,14 @@ export const useWatchlistStore = create<WatchlistState>()(
     {
       name: 'watchlist-storage',
       partialize: (state) => ({
-        items: state.items,
-        isOpen: false,
-        currentWatchlistId: state.currentWatchlistId
-      })
+        // Speichere nur gültige Items mit Symbol
+        items: state.items.filter(item => 
+          item.symbol && typeof item.symbol === 'string'
+        ),
+        isOpen: false
+      }),
+      // Verhindere Speichern während Hydration, um Konflikte zu vermeiden
+      skipHydration: true
     }
   )
 )

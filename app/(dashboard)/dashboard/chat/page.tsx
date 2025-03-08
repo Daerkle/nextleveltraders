@@ -57,7 +57,7 @@ export default function ChatPage() {
 
   const welcomeMessage: ChatMessage = {
     role: 'assistant',
-    content: 'Willkommen bei NextLevelTraders KI-Chat! Ich kann Ihnen mit Marktanalysen, Finanzdaten und Trading-Strategien helfen. Ich habe direkten Zugriff auf Echtzeit-Marktdaten über die Financial Modeling Prep API.'
+    content: 'Willkommen, ich bin NeXus! Ich kann Ihnen mit Marktanalysen, Finanzdaten und Trading-Strategien helfen.'
   };
 
   const templates = [

@@ -2,7 +2,19 @@
   "node": {
     "7f45657245baac5a01f1e8f25a32a84a9f1c7c3e97": {
       "workers": {
-        "app/(dashboard)/dashboard/settings/page": {
+        "app/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(auth)/sign-in/[[...sign-in]]/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/ki/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
@@ -14,26 +26,76 @@
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
-        "app/(dashboard)/dashboard/chat/page": {
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/charts/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/pivots/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         }
       },
       "layer": {
-        "app/(dashboard)/dashboard/settings/page": "rsc",
+        "app/page": "rsc",
+        "app/(auth)/sign-in/[[...sign-in]]/page": "rsc",
+        "app/(dashboard)/dashboard/page": "rsc",
+        "app/(dashboard)/dashboard/ki/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/page": "rsc",
         "app/_not-found/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": "rsc",
-        "app/(dashboard)/dashboard/chat/page": "rsc"
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": "rsc",
+        "app/(dashboard)/dashboard/charts/page": "rsc",
+        "app/(dashboard)/dashboard/pivots/page": "rsc"
       }
     },
     "7f47f88e865a6bc9e200697f42f714b6e6e89079f4": {
       "workers": {
-        "app/(dashboard)/dashboard/settings/page": {
+        "app/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(auth)/sign-in/[[...sign-in]]/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/ki/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
@@ -45,26 +107,76 @@
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
-        "app/(dashboard)/dashboard/chat/page": {
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/charts/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/pivots/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         }
       },
       "layer": {
-        "app/(dashboard)/dashboard/settings/page": "rsc",
+        "app/page": "rsc",
+        "app/(auth)/sign-in/[[...sign-in]]/page": "rsc",
+        "app/(dashboard)/dashboard/page": "rsc",
+        "app/(dashboard)/dashboard/ki/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/page": "rsc",
         "app/_not-found/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": "rsc",
-        "app/(dashboard)/dashboard/chat/page": "rsc"
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": "rsc",
+        "app/(dashboard)/dashboard/charts/page": "rsc",
+        "app/(dashboard)/dashboard/pivots/page": "rsc"
       }
     },
     "7f971eb940ee905c3d94a86d308b3098a0f00179dd": {
       "workers": {
-        "app/(dashboard)/dashboard/settings/page": {
+        "app/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(auth)/sign-in/[[...sign-in]]/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/ki/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
@@ -76,26 +188,76 @@
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         },
-        "app/(dashboard)/dashboard/chat/page": {
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/charts/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/pivots/page": {
           "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fkeyless-actions.js%22%2C%5B%7B%22id%22%3A%227f45657245baac5a01f1e8f25a32a84a9f1c7c3e97%22%2C%22exportedName%22%3A%22createOrReadKeylessAction%22%7D%2C%7B%22id%22%3A%227f47f88e865a6bc9e200697f42f714b6e6e89079f4%22%2C%22exportedName%22%3A%22deleteKeylessAction%22%7D%2C%7B%22id%22%3A%227f971eb940ee905c3d94a86d308b3098a0f00179dd%22%2C%22exportedName%22%3A%22syncKeylessConfigAction%22%7D%5D%5D%5D&__client_imported__=!",
           "async": false
         }
       },
       "layer": {
-        "app/(dashboard)/dashboard/settings/page": "rsc",
+        "app/page": "rsc",
+        "app/(auth)/sign-in/[[...sign-in]]/page": "rsc",
+        "app/(dashboard)/dashboard/page": "rsc",
+        "app/(dashboard)/dashboard/ki/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/page": "rsc",
         "app/_not-found/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": "rsc",
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": "rsc",
-        "app/(dashboard)/dashboard/chat/page": "rsc"
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": "rsc",
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": "rsc",
+        "app/(dashboard)/dashboard/charts/page": "rsc",
+        "app/(dashboard)/dashboard/pivots/page": "rsc"
       }
     },
     "7f2fd0f0b6282bc7b8841ac2cb87de1739bc398874": {
       "workers": {
-        "app/(dashboard)/dashboard/settings/page": {
+        "app/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(auth)/sign-in/[[...sign-in]]/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/ki/page": {
           "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
@@ -107,21 +269,59 @@
           "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": {
           "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         },
-        "app/(dashboard)/dashboard/chat/page": {
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/charts/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/(dashboard)/dashboard/pivots/page": {
           "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fsteffengottle%2FDesktop%2Fnextleveltraders%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%7B%22id%22%3A%227f2fd0f0b6282bc7b8841ac2cb87de1739bc398874%22%2C%22exportedName%22%3A%22invalidateCacheAction%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         }
       },
       "layer": {
-        "app/(dashboard)/dashboard/settings/page": "action-browser",
+        "app/page": "action-browser",
+        "app/(auth)/sign-in/[[...sign-in]]/page": "action-browser",
+        "app/(dashboard)/dashboard/page": "action-browser",
+        "app/(dashboard)/dashboard/ki/page": "action-browser",
         "app/(dashboard)/dashboard/knowledge/page": "action-browser",
         "app/_not-found/page": "action-browser",
+        "app/(dashboard)/dashboard/knowledge/optionstrading/page": "action-browser",
         "app/(dashboard)/dashboard/knowledge/technische-analyse/page": "action-browser",
-        "app/(dashboard)/dashboard/chat/page": "action-browser"
+        "app/(dashboard)/dashboard/knowledge/chartmuster/page": "action-browser",
+        "app/(dashboard)/dashboard/knowledge/indikatoren/page": "action-browser",
+        "app/(dashboard)/dashboard/knowledge/akronyme/page": "action-browser",
+        "app/(dashboard)/dashboard/knowledge/psychologie/page": "action-browser",
+        "app/(dashboard)/dashboard/knowledge/pivot-points/page": "action-browser",
+        "app/(dashboard)/dashboard/charts/page": "action-browser",
+        "app/(dashboard)/dashboard/pivots/page": "action-browser"
       }
     }
   },

@@ -1,83 +1,74 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date)
+export function formatPrice(price: number | string) {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "USD",
+  }).format(Number(price));
 }
 
-export function formatCurrency(amount: number, currency: string = 'EUR'): string {
+export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('de-DE', {
     style: 'currency',
-    currency: currency,
+    currency: 'USD',
     minimumFractionDigits: 2,
-  }).format(amount)
+    maximumFractionDigits: 2
+  }).format(amount);
 }
 
-export function getURL() {
-  let url =
-    process?.env?.NEXT_PUBLIC_APP_URL ?? // Set this to your site URL in production env.
-    process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
-    'http://localhost:3000'
-
-  // Make sure to include `https://` when not localhost.
-  url = url.includes('http') ? url : `https://${url}`
-  
-  // Make sure to include trailing `/`.
-  url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
-  
-  return url
+export function formatPercent(value: number) {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  }).format(value);
 }
 
-export function isValidEmail(email: string) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
-export function truncate(str: string, length: number) {
-  if (str.length <= length) return str
-  return str.slice(0, length) + '...'
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat('de-DE').format(value);
 }
 
 export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout
-
-  return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
+export function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('de-DE', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(date);
 }
 
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean
-  
-  return function executedFunction(...args: Parameters<T>) {
-    if (!inThrottle) {
-      func(...args)
-      inThrottle = true
-      setTimeout(() => inThrottle = false, limit)
-    }
-  }
+export function truncate(str: string, length: number) {
+  if (!str) return '';
+  return str.length > length ? `${str.substring(0, length)}...` : str;
+}
+
+export function getRelativeTime(date: Date) {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `vor ${days}d`;
+  if (hours > 0) return `vor ${hours}h`;
+  if (minutes > 0) return `vor ${minutes}m`;
+  return 'gerade eben';
+}
+
+export function isValidDate(date: any) {
+  return date instanceof Date && !isNaN(date.getTime());
+}
+
+export function addDays(date: Date, days: number) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 }

@@ -22,7 +22,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
   { name: "Charts", href: "/dashboard/charts", icon: BarChart3Icon },
   { name: "Pivot-Analysen", href: "/dashboard/pivots", icon: PanelRightIcon },
-  { name: "KI-Analyse", href: "/dashboard/ai-analysis", icon: AtomIcon },
+  { name: "KI-Analyse", href: "/dashboard/ki", icon: AtomIcon },
   { name: "News", href: "/dashboard/news", icon: GlobeIcon },
   { 
     name: "KI-Chat", 

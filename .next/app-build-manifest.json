@@ -6,50 +6,115 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(dashboard)/layout": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/layout.js"
+      "static/chunks/app/page.js"
     ],
-    "/(dashboard)/dashboard/settings/page": [
+    "/(auth)/sign-in/[[...sign-in]]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/settings/page.js"
-    ],
-    "/api/watchlist/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/watchlist/route.js"
+      "static/chunks/app/(auth)/sign-in/[[...sign-in]]/page.js"
     ],
     "/api/subscription/status/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/subscription/status/route.js"
     ],
+    "/(dashboard)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/layout.js"
+    ],
+    "/(dashboard)/dashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/page.js"
+    ],
+    "/api/market-data/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/market-data/route.js"
+    ],
+    "/api/watchlist/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/watchlist/route.js"
+    ],
     "/api/market-data/quotes/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/market-data/quotes/route.js"
+    ],
+    "/(dashboard)/dashboard/ki/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/ki/page.js"
+    ],
+    "/api/market-data/scan/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/market-data/scan/route.js"
     ],
     "/(dashboard)/dashboard/knowledge/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/dashboard/knowledge/page.js"
     ],
+    "/(dashboard)/dashboard/knowledge/optionstrading/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/knowledge/optionstrading/page.js"
+    ],
     "/(dashboard)/dashboard/knowledge/technische-analyse/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/dashboard/knowledge/technische-analyse/page.js"
     ],
-    "/(dashboard)/dashboard/chat/page": [
+    "/(dashboard)/dashboard/knowledge/chartmuster/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/chat/page.js"
+      "static/chunks/app/(dashboard)/dashboard/knowledge/chartmuster/page.js"
     ],
-    "/_not-found/page": [
+    "/(dashboard)/dashboard/knowledge/indikatoren/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(dashboard)/dashboard/knowledge/indikatoren/page.js"
+    ],
+    "/(dashboard)/dashboard/knowledge/akronyme/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/knowledge/akronyme/page.js"
+    ],
+    "/(dashboard)/dashboard/knowledge/psychologie/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/knowledge/psychologie/page.js"
+    ],
+    "/(dashboard)/dashboard/knowledge/pivot-points/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/knowledge/pivot-points/page.js"
+    ],
+    "/(dashboard)/dashboard/charts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/charts/page.js"
+    ],
+    "/api/search/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/search/route.js"
+    ],
+    "/api/chart-data/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/chart-data/route.js"
+    ],
+    "/(dashboard)/dashboard/pivots/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/pivots/page.js"
     ]
   }
 }

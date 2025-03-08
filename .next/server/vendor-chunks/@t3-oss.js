@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "vendor-chunks/@t3-oss";
+exports.ids = ["vendor-chunks/@t3-oss"];
+exports.modules = {
+
+/***/ "(rsc)/./node_modules/@t3-oss/env-nextjs/dist/index.mjs":
+/*!********************************************************!*\
+  !*** ./node_modules/@t3-oss/env-nextjs/dist/index.mjs ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   createEnv: () => (/* binding */ P)\n/* harmony export */ });\n/* harmony import */ var zod__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! zod */ \"(rsc)/./node_modules/zod/lib/index.mjs\");\nfunction T(e){let r=e.runtimeEnvStrict??e.runtimeEnv??process.env;if(e.skipValidation)return r;let i=typeof e.client==\"object\"?e.client:{},o=typeof e.server==\"object\"?e.server:{},s=typeof e.shared==\"object\"?e.shared:{},d=zod__WEBPACK_IMPORTED_MODULE_0__.z.object(i),f=zod__WEBPACK_IMPORTED_MODULE_0__.z.object(o),a=zod__WEBPACK_IMPORTED_MODULE_0__.z.object(s),v=e.isServer??typeof window>\"u\",y=d.merge(a),p=f.merge(a).merge(d),l=v?p.safeParse(r):y.safeParse(r),m=e.onValidationError??(t=>{throw console.error(\"\\u274C Invalid environment variables:\",t.flatten().fieldErrors),new Error(\"Invalid environment variables\")}),u=e.onInvalidAccess??(t=>{throw new Error(\"\\u274C Attempted to access a server-side environment variable on the client\")});return l.success===!1?m(l.error):new Proxy(l.data,{get(t,n){if(typeof n==\"string\")return!v&&e.clientPrefix&&!n.startsWith(e.clientPrefix)&&a.shape[n]===void 0?u(n):t[n]}})}var x=\"NEXT_PUBLIC_\";function P(e){let r=typeof e.client==\"object\"?e.client:{},i=typeof e.server==\"object\"?e.server:{},o=typeof e.shared==\"object\"?e.shared:{},s=e.runtimeEnv?e.runtimeEnv:{...process.env,...e.experimental__runtimeEnv};return T({...e,shared:o,client:r,server:i,clientPrefix:x,runtimeEnv:s})}\n//# sourceMappingURL=index.mjs.map//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvQHQzLW9zcy9lbnYtbmV4dGpzL2Rpc3QvaW5kZXgubWpzIiwibWFwcGluZ3MiOiI7Ozs7O0FBQXdCLGNBQWMsb0RBQW9ELDZCQUE2QiwyQ0FBMkMsd0NBQXdDLHdDQUF3QyxHQUFHLGtDQUFDLGFBQWEsa0NBQUMsYUFBYSxrQ0FBQyw0SUFBNEksZ0lBQWdJLDRCQUE0QiwrRkFBK0YsRUFBRSxtREFBbUQsU0FBUyw4R0FBOEcsRUFBRSxxQkFBcUIsY0FBYywyQ0FBMkMsd0NBQXdDLHdDQUF3Qyw4QkFBOEIsOENBQThDLFVBQVUsNERBQTRELEVBQXlCO0FBQ2hwQyIsInNvdXJjZXMiOlsiL1VzZXJzL3N0ZWZmZW5nb3R0bGUvRGVza3RvcC9uZXh0bGV2ZWx0cmFkZXJzL25vZGVfbW9kdWxlcy9AdDMtb3NzL2Vudi1uZXh0anMvZGlzdC9pbmRleC5tanMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0e3ogYXMgY31mcm9tXCJ6b2RcIjtmdW5jdGlvbiBUKGUpe2xldCByPWUucnVudGltZUVudlN0cmljdD8/ZS5ydW50aW1lRW52Pz9wcm9jZXNzLmVudjtpZihlLnNraXBWYWxpZGF0aW9uKXJldHVybiByO2xldCBpPXR5cGVvZiBlLmNsaWVudD09XCJvYmplY3RcIj9lLmNsaWVudDp7fSxvPXR5cGVvZiBlLnNlcnZlcj09XCJvYmplY3RcIj9lLnNlcnZlcjp7fSxzPXR5cGVvZiBlLnNoYXJlZD09XCJvYmplY3RcIj9lLnNoYXJlZDp7fSxkPWMub2JqZWN0KGkpLGY9Yy5vYmplY3QobyksYT1jLm9iamVjdChzKSx2PWUuaXNTZXJ2ZXI/P3R5cGVvZiB3aW5kb3c+XCJ1XCIseT1kLm1lcmdlKGEpLHA9Zi5tZXJnZShhKS5tZXJnZShkKSxsPXY/cC5zYWZlUGFyc2Uocik6eS5zYWZlUGFyc2UociksbT1lLm9uVmFsaWRhdGlvbkVycm9yPz8odD0+e3Rocm93IGNvbnNvbGUuZXJyb3IoXCJcXHUyNzRDIEludmFsaWQgZW52aXJvbm1lbnQgdmFyaWFibGVzOlwiLHQuZmxhdHRlbigpLmZpZWxkRXJyb3JzKSxuZXcgRXJyb3IoXCJJbnZhbGlkIGVudmlyb25tZW50IHZhcmlhYmxlc1wiKX0pLHU9ZS5vbkludmFsaWRBY2Nlc3M/Pyh0PT57dGhyb3cgbmV3IEVycm9yKFwiXFx1Mjc0QyBBdHRlbXB0ZWQgdG8gYWNjZXNzIGEgc2VydmVyLXNpZGUgZW52aXJvbm1lbnQgdmFyaWFibGUgb24gdGhlIGNsaWVudFwiKX0pO3JldHVybiBsLnN1Y2Nlc3M9PT0hMT9tKGwuZXJyb3IpOm5ldyBQcm94eShsLmRhdGEse2dldCh0LG4pe2lmKHR5cGVvZiBuPT1cInN0cmluZ1wiKXJldHVybiF2JiZlLmNsaWVudFByZWZpeCYmIW4uc3RhcnRzV2l0aChlLmNsaWVudFByZWZpeCkmJmEuc2hhcGVbbl09PT12b2lkIDA/dShuKTp0W25dfX0pfXZhciB4PVwiTkVYVF9QVUJMSUNfXCI7ZnVuY3Rpb24gUChlKXtsZXQgcj10eXBlb2YgZS5jbGllbnQ9PVwib2JqZWN0XCI/ZS5jbGllbnQ6e30saT10eXBlb2YgZS5zZXJ2ZXI9PVwib2JqZWN0XCI/ZS5zZXJ2ZXI6e30sbz10eXBlb2YgZS5zaGFyZWQ9PVwib2JqZWN0XCI/ZS5zaGFyZWQ6e30scz1lLnJ1bnRpbWVFbnY/ZS5ydW50aW1lRW52OnsuLi5wcm9jZXNzLmVudiwuLi5lLmV4cGVyaW1lbnRhbF9fcnVudGltZUVudn07cmV0dXJuIFQoey4uLmUsc2hhcmVkOm8sY2xpZW50OnIsc2VydmVyOmksY2xpZW50UHJlZml4OngscnVudGltZUVudjpzfSl9ZXhwb3J0e1AgYXMgY3JlYXRlRW52fTtcbi8vIyBzb3VyY2VNYXBwaW5nVVJMPWluZGV4Lm1qcy5tYXAiXSwibmFtZXMiOltdLCJpZ25vcmVMaXN0IjpbMF0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/@t3-oss/env-nextjs/dist/index.mjs\n");
+
+/***/ })
+
+};
+;

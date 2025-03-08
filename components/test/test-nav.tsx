@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { TestPage } from "@/types/test";
-import { Activity, Code, LucideBolt, Settings } from "lucide-react";
+import { Activity, Code, Zap, Settings } from "lucide-react";
 
 export const testPages: TestPage[] = [
   {
@@ -26,7 +26,7 @@ export const testPages: TestPage[] = [
     title: "API Playground",
     description: "Interaktiver API Playground und Test-Tools",
     href: "/test/playground",
-    icon: LucideBolt,
+    icon: Zap,
     tags: ["API", "Development"],
     comingSoon: true,
   },

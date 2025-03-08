@@ -9,6 +9,32 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   typescript: true,
 })
 
+export const PLANS = {
+  FREE: {
+    name: 'Free',
+    description: 'Grundlegende Features für Einsteiger',
+    price: 0,
+    features: [
+      'Basis Marktdaten',
+      'Limitierte API Aufrufe',
+      'Grundlegende Analyse Tools'
+    ],
+    priceId: process.env.STRIPE_FREE_PRICE_ID,
+  },
+  PRO: {
+    name: 'Pro',
+    description: 'Erweiterte Features für aktive Trader',
+    price: 29.99,
+    features: [
+      'Erweiterte Marktdaten',
+      'Unbegrenzte API Aufrufe',
+      'Alle Analyse Tools',
+      'Premium Support'
+    ],
+    priceId: process.env.STRIPE_PRO_PRICE_ID,
+  }
+}
+
 export const getStripeCustomer = async ({
   stripe,
   userId,
@@ -62,32 +88,6 @@ export const formatStripePrice = (price: number) => {
     minimumFractionDigits: 2,
   }).format(price / 100)
 }
-
-export const PLANS = [
-  {
-    name: 'Free',
-    description: 'Grundlegende Features für Einsteiger',
-    price: 0,
-    features: [
-      'Basis Marktdaten',
-      'Limitierte API Aufrufe',
-      'Grundlegende Analyse Tools'
-    ],
-    priceId: process.env.STRIPE_FREE_PRICE_ID,
-  },
-  {
-    name: 'Pro',
-    description: 'Erweiterte Features für aktive Trader',
-    price: 29.99,
-    features: [
-      'Erweiterte Marktdaten',
-      'Unbegrenzte API Aufrufe',
-      'Alle Analyse Tools',
-      'Premium Support'
-    ],
-    priceId: process.env.STRIPE_PRO_PRICE_ID,
-  }
-]
 
 export const getSubscriptionPlan = async (subscriptionId: string) => {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)

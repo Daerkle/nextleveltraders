@@ -1,15 +1,11 @@
-import { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { TestEnvironmentInfo } from "@/components/test/environment-info";
 import { cn } from "@/lib/utils";
-
-export const metadata: Metadata = {
-  title: "Test & Demo - NextLevelTraders",
-  description: "Test- und Demoseiten für NextLevelTraders Komponenten und Features",
-};
 
 const testPages = [
   {

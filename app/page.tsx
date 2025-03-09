@@ -2,14 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { 
-  ChevronRightIcon, 
-  SparklesIcon, 
-  StarIcon, 
-  TrendingUpIcon, 
-  CheckIcon 
+import {
+  ChevronRightIcon,
+  SparklesIcon,
+  StarIcon,
+  TrendingUpIcon,
+  CheckIcon
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { FooterSection } from "@/components/footer";
 import { FaDiscord } from "react-icons/fa";
 import {
@@ -91,7 +92,13 @@ export default function HomePage() {
       {/* Header */}
       <header className="container flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="NextLevelTraders Logo" className="h-10 w-auto object-contain" />
+          <Image
+            src="/logo.png"
+            alt="NextLevelTraders Logo"
+            width={40}
+            height={40}
+            className="h-10 w-auto object-contain"
+          />
           <div className="flex items-baseline">
             <span className="font-heading font-bold text-xl">Next</span>
             <span className="font-heading font-light text-xl">Level</span>

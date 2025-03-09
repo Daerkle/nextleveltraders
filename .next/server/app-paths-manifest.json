@@ -1,6 +1,6 @@
 {
   "/page": "app/page.js",
-  "/api/watchlist/route": "app/api/watchlist/route.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js"
+  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js",
+  "/(dashboard)/dashboard/charts/page": "app/(dashboard)/dashboard/charts/page.js"
 }

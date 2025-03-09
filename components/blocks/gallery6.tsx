@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -153,9 +154,11 @@ const Gallery6 = ({
                     <div className="flex aspect-[3/2] overflow-clip rounded-xl">
                       <div className="flex-1">
                         <div className="relative h-full w-full origin-bottom transition duration-300 group-hover:scale-105">
-                          <img
+                          <Image
                             src={item.image}
                             alt={item.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 452px"
                             className="h-full w-full object-cover object-center"
                           />
                         </div>

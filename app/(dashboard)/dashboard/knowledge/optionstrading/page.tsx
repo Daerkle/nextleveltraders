@@ -123,7 +123,7 @@ export default function OptionsPage() {
               <h3 className="font-semibold mb-2">Die 10 goldenen Regeln</h3>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
                 <li><span className="font-medium">Trading als Business:</span> Respektiere dein Kapital, zahle dich selbst aus, fokussiere dich auf langfristigen Erfolg</li>
-                <li><span className="font-medium">Nie Verlustpositionen aufstocken:</span> Verhindert das "Averaging Down" und schützt vor Totalverlusten</li>
+                <li><span className="font-medium">Nie Verlustpositionen aufstocken:</span> Verhindert das &quot;Averaging Down&quot; und schützt vor Totalverlusten</li>
                 <li><span className="font-medium">Ohne Bias handeln:</span> Folge dem Preis, nicht deiner vorgefassten Meinung</li>
                 <li><span className="font-medium">Systematisch Gewinne mitnehmen:</span> Nimm Gewinne bei 30%, 50%, 75%, 100% mit</li>
                 <li><span className="font-medium">Kapital schützen:</span> Maximal 5-10% Risiko pro Trade</li>

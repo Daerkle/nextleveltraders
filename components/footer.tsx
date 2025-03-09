@@ -15,6 +15,7 @@ import { Moon, Send, Sun } from "lucide-react"
 import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
 import Link from "next/link"
+import Image from "next/image"
 import { useTheme } from "next-themes"
 
 export function FooterSection() {
@@ -26,7 +27,13 @@ export function FooterSection() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
             <Link href="/" className="mb-4 flex items-center gap-2">
-              <img src="/logo.png" alt="NextLevelTraders Logo" className="h-8 w-auto object-contain" />
+              <Image
+                src="/logo.png"
+                alt="NextLevelTraders Logo"
+                width={32}
+                height={32}
+                className="h-8 w-auto object-contain"
+              />
               <div className="flex items-baseline">
                 <span className="font-heading font-bold text-xl">Next</span>
                 <span className="font-heading font-light text-xl">Level</span>

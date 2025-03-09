@@ -28,16 +28,23 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 
+interface CountUpProps {
+  value: number;
+  duration?: number;
+  decimals?: number;
+}
+
 // Komponente für den Zähleffekt
-const CountUp = ({ value, duration = 500, decimals = 0 }) => {
+const CountUp = ({ value, duration = 500, decimals = 0 }: CountUpProps) => {
   const [displayValue, setDisplayValue] = useState(0);
   
   useEffect(() => {
-    let startValue = displayValue;
     const endValue = Number(value);
     const startTime = performance.now();
+    const startValue = displayValue; // Capture current value
     
-    const updateValue = (currentTime) => {
+    let frameId: number;
+    const updateValue = (currentTime: number) => {
       const elapsedTime = currentTime - startTime;
       if (elapsedTime >= duration) {
         setDisplayValue(endValue);
@@ -47,11 +54,19 @@ const CountUp = ({ value, duration = 500, decimals = 0 }) => {
       const progress = elapsedTime / duration;
       const nextValue = startValue + (endValue - startValue) * progress;
       setDisplayValue(nextValue);
-      requestAnimationFrame(updateValue);
+      frameId = requestAnimationFrame(updateValue);
     };
     
-    requestAnimationFrame(updateValue);
-  }, [value, duration]);
+    frameId = requestAnimationFrame(updateValue);
+    
+    // Cleanup
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, duration]); // displayValue absichtlich ausgelassen, um Endlos-Loop zu vermeiden
   
   return decimals === 0 
     ? Math.round(displayValue) 

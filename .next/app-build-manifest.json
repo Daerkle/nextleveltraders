@@ -11,15 +11,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/(auth)/sign-in/[[...sign-in]]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/sign-in/[[...sign-in]]/page.js"
-    ],
     "/api/subscription/status/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/subscription/status/route.js"
+    ],
+    "/(auth)/sign-in/[[...sign-in]]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/sign-in/[[...sign-in]]/page.js"
     ],
     "/(dashboard)/layout": [
       "static/chunks/webpack.js",
@@ -46,75 +46,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/market-data/quotes/route.js"
     ],
-    "/(dashboard)/dashboard/ki/page": [
+    "/(dashboard)/dashboard/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/ki/page.js"
-    ],
-    "/api/market-data/scan/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/market-data/scan/route.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/optionstrading/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/optionstrading/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/technische-analyse/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/technische-analyse/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/chartmuster/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/chartmuster/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/indikatoren/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/indikatoren/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/akronyme/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/akronyme/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/psychologie/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/psychologie/page.js"
-    ],
-    "/(dashboard)/dashboard/knowledge/pivot-points/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/knowledge/pivot-points/page.js"
-    ],
-    "/(dashboard)/dashboard/charts/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/charts/page.js"
-    ],
-    "/api/search/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/search/route.js"
-    ],
-    "/api/chart-data/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/chart-data/route.js"
-    ],
-    "/(dashboard)/dashboard/pivots/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/pivots/page.js"
+      "static/chunks/app/(dashboard)/dashboard/settings/page.js"
     ]
   }
 }

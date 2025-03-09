@@ -72,3 +72,14 @@ export function addDays(date: Date, days: number) {
   result.setDate(result.getDate() + days);
   return result;
 }
+
+export function getURL() {
+  let url = process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.NEXT_PUBLIC_VERCEL_URL ??
+    'http://localhost:3000';
+
+  // Stelle sicher, dass die URL mit https:// beginnt, außer bei localhost
+  url = url.includes('localhost') ? url : url.replace('http://', 'https://');
+
+  return url;
+}

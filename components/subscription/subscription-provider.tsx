@@ -7,6 +7,8 @@ import { LIMITATIONS } from "@/config/subscriptions";
 
 type SubscriptionContextType = ReturnType<typeof useSubscription> & {
   features: ReturnType<typeof useSubscriptionFeatures>["features"];
+  isPro: boolean;
+  isLoading: boolean;
 };
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
@@ -70,7 +72,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       subscription.setTrialStatus(false, null);
       subscription.setStatus('inactive');
     }
-  }, [isUserLoaded, user]);
+  }, [isUserLoaded, user, subscription]);
 
   const value = {
     ...subscription,

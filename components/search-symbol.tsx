@@ -22,43 +22,6 @@ export function SearchSymbol({ defaultSymbol = 'AAPL' }: { defaultSymbol?: strin
   const [displayValue, setDisplayValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // Debounce die Suchanfragen
-  const debouncedQuery = useDebounce(searchQuery, 300);
-
-  useEffect(() => {
-    const symbol = searchParams.get('symbol') || defaultSymbol;
-    if (symbol) {
-      setValue(symbol);
-      fetchSymbolDetails(symbol);
-    }
-  }, [searchParams, defaultSymbol]);
-
-  // Führe die Suche aus, wenn sich der debounced Wert ändert
-  useEffect(() => {
-    if (debouncedQuery) {
-      handleSearch(debouncedQuery);
-    }
-  }, [debouncedQuery]);
-
-  const fetchSymbolDetails = useCallback(async (symbol: string) => {
-    if (!symbol) return;
-    
-    try {
-      const response = await fetch(`/api/search?query=${encodeURIComponent(symbol)}`);
-      if (!response.ok) throw new Error('Failed to fetch symbol details');
-      
-      const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setDisplayValue(`${data[0].symbol} - ${data[0].name}`);
-      } else {
-        setDisplayValue(symbol);
-      }
-    } catch (error) {
-      console.error('Error fetching symbol details:', error);
-      setDisplayValue(symbol);
-    }
-  }, []);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query) {
@@ -85,6 +48,25 @@ export function SearchSymbol({ defaultSymbol = 'AAPL' }: { defaultSymbol?: strin
     }
   }, []);
 
+  const fetchSymbolDetails = useCallback(async (symbol: string) => {
+    if (!symbol) return;
+    
+    try {
+      const response = await fetch(`/api/search?query=${encodeURIComponent(symbol)}`);
+      if (!response.ok) throw new Error('Failed to fetch symbol details');
+      
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setDisplayValue(`${data[0].symbol} - ${data[0].name}`);
+      } else {
+        setDisplayValue(symbol);
+      }
+    } catch (error) {
+      console.error('Error fetching symbol details:', error);
+      setDisplayValue(symbol);
+    }
+  }, []);
+
   const handleSelect = useCallback((item: SearchResult) => {
     if (!item || !item.symbol) return;
     
@@ -93,7 +75,6 @@ export function SearchSymbol({ defaultSymbol = 'AAPL' }: { defaultSymbol?: strin
     setOpen(false);
     setSearchQuery('');
     
-    // URL aktualisieren und Seite neu laden
     const currentPath = window.location.pathname;
     const params = new URLSearchParams(searchParams.toString());
     params.set('symbol', item.symbol);
@@ -114,6 +95,24 @@ export function SearchSymbol({ defaultSymbol = 'AAPL' }: { defaultSymbol?: strin
     if (value === undefined) return;
     setSearchQuery(value);
   }, []);
+
+  // Debounce die Suchanfragen
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  useEffect(() => {
+    const symbol = searchParams.get('symbol') || defaultSymbol;
+    if (symbol) {
+      setValue(symbol);
+      fetchSymbolDetails(symbol);
+    }
+  }, [searchParams, defaultSymbol, fetchSymbolDetails]);
+
+  // Führe die Suche aus, wenn sich der debounced Wert ändert
+  useEffect(() => {
+    if (debouncedQuery) {
+      handleSearch(debouncedQuery);
+    }
+  }, [debouncedQuery, handleSearch]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -11,6 +11,23 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export const MONTHLY_PRICE = 4900 // 49€ in Cents
 export const YEARLY_PRICE = Math.floor(MONTHLY_PRICE * 12 * 0.85) // 15% Rabatt
 
+export const PLANS = {
+  PRO: {
+    name: 'NextLevelTraders Pro',
+    description: 'Zugang zu allen Premium-Features',
+    price: MONTHLY_PRICE,
+    features: [
+      'Erweiterte Pivot-Analysen',
+      'Vollständige Chart-Funktionen',
+      'Echtzeit-Daten',
+      'KI-Trading-Assistent',
+      'Multi-Timeframe-Analysen',
+      'Unbegrenzte Watchlists',
+      'Prioritäts-Support'
+    ]
+  }
+}
+
 export async function setupSubscriptionPlans() {
   // Pro Plan Produkt erstellen
   const product = await stripe.products.create({
@@ -127,4 +144,27 @@ export const createCustomerPortalSession = async (customerId: string) => {
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
   })
   return session
+}
+
+export async function getSubscriptionPlan(userId: string) {
+  try {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: userId,
+      status: 'active',
+      expand: ['data.plan']
+    });
+
+    const subscription = subscriptions.data[0];
+    const isPro = subscription?.status === 'active';
+
+    return {
+      ...subscription,
+      isPro
+    };
+  } catch (error) {
+    console.error('Fehler beim Abrufen des Abonnements:', error);
+    return {
+      isPro: false
+    };
+  }
 }

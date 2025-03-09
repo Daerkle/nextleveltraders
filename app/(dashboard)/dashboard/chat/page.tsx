@@ -9,6 +9,7 @@ import { useUser } from "@clerk/nextjs";
 import { useChat } from "@/lib/hooks/use-chat";
 import { Message as ChatMessage } from "@/lib/types/chat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
 import {
   Tooltip,
   TooltipContent,
@@ -28,18 +29,22 @@ function Message({ content, isUser, userImage }: MessageProps) {
       <div className={`h-8 w-8 rounded-full ${isUser ? 'bg-secondary/20' : 'bg-primary/20'} flex items-center justify-center overflow-hidden ${!isUser ? 'p-1.5' : ''}`}>
         {isUser ? (
           userImage ? (
-            <img
+            <Image
               src={userImage}
               alt="Profilbild"
+              width={32}
+              height={32}
               className="w-full h-full object-cover"
             />
           ) : (
             <span className="text-sm font-medium">Sie</span>
           )
         ) : (
-          <img
+          <Image
             src="/nexus_white.png"
             alt="Nexus Logo"
+            width={24}
+            height={24}
             className="w-6 h-6 object-contain"
           />
         )}

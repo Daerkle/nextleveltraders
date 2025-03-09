@@ -1,12 +1,6 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/search/route": "app/api/search/route.js",
-  "/api/chart-data/route": "app/api/chart-data/route.js",
-  "/api/market-data/route": "app/api/market-data/route.js",
-  "/(dashboard)/dashboard/knowledge/psychologie/page": "app/(dashboard)/dashboard/knowledge/psychologie/page.js",
-  "/(dashboard)/dashboard/knowledge/pivot-points/page": "app/(dashboard)/dashboard/knowledge/pivot-points/page.js",
-  "/(dashboard)/dashboard/ki/page": "app/(dashboard)/dashboard/ki/page.js",
-  "/(dashboard)/dashboard/charts/page": "app/(dashboard)/dashboard/charts/page.js",
-  "/(dashboard)/dashboard/pivots/page": "app/(dashboard)/dashboard/pivots/page.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
+  "/page": "app/page.js",
+  "/api/watchlist/route": "app/api/watchlist/route.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js"
 }

@@ -105,7 +105,7 @@ export default function AkronymePage() {
               <h3 className="font-semibold mb-2">Strategien</h3>
               <ul className="space-y-2 text-sm">
                 <li><span className="font-semibold">LEAPS:</span> <span className="text-muted-foreground">Long-term Equity AnticiPation Securities</span></li>
-                <li><span className="font-semibold">PMCC:</span> <span className="text-muted-foreground">Poor Man's Covered Call</span></li>
+                <li><span className="font-semibold">PMCC:</span> <span className="text-muted-foreground">Poor Man&apos;s Covered Call</span></li>
                 <li><span className="font-semibold">IC:</span> <span className="text-muted-foreground">Iron Condor</span></li>
                 <li><span className="font-semibold">BF:</span> <span className="text-muted-foreground">Butterfly</span></li>
               </ul>

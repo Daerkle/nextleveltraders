@@ -43,7 +43,7 @@ export default function ChartmusterPage() {
               <h3 className="font-semibold mb-2">Bull Flag</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Konsolidierungsmuster nach starkem Anstieg. Parallele Abwärtstrendlinien 
-                bilden eine "Flagge". Ausbruch nach oben wahrscheinlich.
+                bilden eine &quot;Flagge&quot;. Ausbruch nach oben wahrscheinlich.
               </p>
             </div>
             <div>
@@ -77,7 +77,7 @@ export default function ChartmusterPage() {
               <h3 className="font-semibold mb-2">Bear Flag</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Konsolidierungsmuster nach starkem Abwärtstrend. Parallele Aufwärtstrendlinien 
-                bilden eine "Flagge". Ausbruch nach unten wahrscheinlich.
+                bilden eine &quot;Flagge&quot;. Ausbruch nach unten wahrscheinlich.
               </p>
             </div>
             <div>

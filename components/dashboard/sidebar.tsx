@@ -1,6 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState, createContext, useContext } from "react";
 
@@ -145,15 +146,19 @@ export const DesktopSidebar = ({
           href="/dashboard"
           className="flex items-center gap-3"
         >
-          <img 
-            src="/logo.png" 
-            alt="NextLevelTraders Logo" 
+          <Image
+            src="/logo.png"
+            alt="NextLevelTraders Logo"
+            width={32}
+            height={32}
             className="w-8 h-8 object-contain"
           />
           {open && (
-            <span className="text-lg font-semibold">
-              NextLevelTraders
-            </span>
+            <div className="flex items-baseline">
+              <span className="font-heading font-bold text-xl">Next</span>
+              <span className="font-heading font-light text-xl">Level</span>
+              <span className="font-heading font-bold text-xl">Traders</span>
+            </div>
           )}
         </Link>
       </div>
@@ -176,17 +181,21 @@ export const DesktopSidebar = ({
               >
                 {item.name === "KI-Chat" ? (
                   <>
-                    <img
+                    <Image
                       src="/nexus.png"
                       alt="Nexus Logo"
+                      width={20}
+                      height={20}
                       className={cn(
                         "h-5 w-5 object-contain flex-shrink-0 dark:hidden",
                         isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                       )}
                     />
-                    <img
+                    <Image
                       src="/nexus_white.png"
                       alt="Nexus Logo"
+                      width={20}
+                      height={20}
                       className={cn(
                         "h-5 w-5 object-contain flex-shrink-0 hidden dark:block",
                         isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
@@ -239,9 +248,11 @@ export const MobileSidebar = ({
       {...props}
     >
       <div className="flex items-center gap-3">
-        <img 
-          src="/logo.png" 
-          alt="NextLevelTraders Logo" 
+        <Image
+          src="/logo.png"
+          alt="NextLevelTraders Logo"
+          width={32}
+          height={32}
           className="w-8 h-8 object-contain"
         />
         <span className="text-lg font-semibold">
@@ -297,17 +308,21 @@ export const MobileSidebar = ({
                   >
                     {item.name === "KI-Chat" ? (
                       <>
-                        <img
+                        <Image
                           src="/nexus.png"
                           alt="Nexus Logo"
+                          width={20}
+                          height={20}
                           className={cn(
                             "h-5 w-5 object-contain flex-shrink-0 dark:hidden",
                             isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
                           )}
                         />
-                        <img
+                        <Image
                           src="/nexus_white.png"
                           alt="Nexus Logo"
+                          width={20}
+                          height={20}
                           className={cn(
                             "h-5 w-5 object-contain flex-shrink-0 hidden dark:block",
                             isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"

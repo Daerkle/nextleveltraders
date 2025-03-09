@@ -9,8 +9,8 @@ interface SubscriptionActionsProps {
   isPro: boolean;
   isLoading?: boolean;
   subscription?: {
-    cancelAtPeriodEnd: boolean;
-    currentPeriodEnd: Date;
+    cancel_at_period_end: boolean;
+    current_period_end: number;
   };
 }
 
@@ -149,7 +149,7 @@ export function SubscriptionActions({
     );
   }
 
-  if (subscription?.cancelAtPeriodEnd) {
+  if (subscription?.cancel_at_period_end) {
     return (
       <Button
         onClick={handleReactivate}

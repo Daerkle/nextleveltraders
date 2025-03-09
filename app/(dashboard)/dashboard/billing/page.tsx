@@ -44,19 +44,19 @@ export default async function BillingPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium">€29,00/Monat</p>
-                  {plan.subscription?.cancelAtPeriodEnd && (
+                  {plan.subscription?.cancel_at_period_end && (
                     <p className="text-sm text-muted-foreground">
-                      Läuft aus am {formatDate(plan.subscription.currentPeriodEnd)}
+                      Läuft aus am {formatDate(new Date(plan.subscription.current_period_end * 1000))}
                     </p>
                   )}
                 </div>
               </div>
 
-              {plan.subscription?.cancelAtPeriodEnd && (
+              {plan.subscription?.cancel_at_period_end && (
                 <Alert>
                   <AlertTitle>Ihr Abonnement läuft aus</AlertTitle>
                   <AlertDescription>
-                    Ihr Pro-Plan läuft am {formatDate(plan.subscription.currentPeriodEnd)} aus.
+                    Ihr Pro-Plan läuft am {formatDate(new Date(plan.subscription.current_period_end * 1000))} aus.
                     Sie können Ihr Abonnement jederzeit reaktivieren.
                   </AlertDescription>
                 </Alert>

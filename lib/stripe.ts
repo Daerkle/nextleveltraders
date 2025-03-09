@@ -146,7 +146,12 @@ export const createCustomerPortalSession = async (customerId: string) => {
   return session
 }
 
-export async function getSubscriptionPlan(userId: string) {
+interface SubscriptionPlan {
+  isPro: boolean;
+  subscription?: Stripe.Subscription;
+}
+
+export async function getSubscriptionPlan(userId: string): Promise<SubscriptionPlan> {
   try {
     const subscriptions = await stripe.subscriptions.list({
       customer: userId,
@@ -158,13 +163,14 @@ export async function getSubscriptionPlan(userId: string) {
     const isPro = subscription?.status === 'active';
 
     return {
-      ...subscription,
-      isPro
+      isPro,
+      subscription: subscription || undefined
     };
   } catch (error) {
     console.error('Fehler beim Abrufen des Abonnements:', error);
     return {
-      isPro: false
+      isPro: false,
+      subscription: undefined
     };
   }
 }

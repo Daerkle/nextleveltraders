@@ -1,44 +1,93 @@
 import { Suspense } from "react";
 import { HelpCircleIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SetupsModal } from "@/components/dashboard/setups-modal";
+
+// Statische Daten für den Fall, dass die API-Anfrage fehlschlägt
+const fallbackData = {
+  spy: { change: 0, changesPercentage: 0, price: 0, symbol: 'SPY' },
+  qqq: { change: 0, changesPercentage: 0, price: 0, symbol: 'QQQ' },
+  vix: { change: 0, changesPercentage: 0, price: 0, symbol: 'VIX' },
+  tlt: { change: 0, changesPercentage: 0, price: 0, symbol: 'TLT' },
+  iwm: { change: 0, changesPercentage: 0, price: 0, symbol: 'IWM' },
+  dxy: { change: 0, changesPercentage: 0, price: 0, symbol: 'DXY' },
+  dji: { change: 0, changesPercentage: 0, price: 0, symbol: 'DIA' },
+  watchlist: [],
+  news: []
+};
 
 async function getMarketData() {
+  const FMP_API_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY;
+  
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/market-data`, {
-      next: { revalidate: 60 }
-    });
+    // Direkter Zugriff auf die FMP API ohne den Umweg über die interne API
+    console.log('Fetching market data directly from FMP API...');
     
-    if (!res.ok) {
-      throw new Error('Failed to fetch market data');
+    // Abrufen der Indexdaten
+    const indicesResponse = await fetch(
+      `https://financialmodelingprep.com/api/v3/quote/SPY,QQQ,VIX,TLT,IWM,DXY?apikey=${FMP_API_KEY}`,
+      { next: { revalidate: 60 } }
+    );
+    
+    if (!indicesResponse.ok) {
+      throw new Error(`Failed to fetch indices: ${indicesResponse.status}`);
     }
     
-    const data = await res.json();
+    const indicesData = await indicesResponse.json();
     
-    // Validate data structure
-    if (!data.spy || !data.qqq || !data.watchlist || !data.news) {
-      throw new Error('Invalid data structure from API');
-    }
+    // Watchlist-Daten abrufen
+    const watchlistResponse = await fetch(
+      `https://financialmodelingprep.com/api/v3/quote/AAPL,MSFT,AMZN,NVDA?apikey=${FMP_API_KEY}`,
+      { next: { revalidate: 60 } }
+    );
     
-    return {
-      spy: data.spy,
-      qqq: data.qqq,
-      watchlist: data.watchlist,
-      news: data.news
+    const watchlistData = await watchlistResponse.json();
+    
+    // Marktnachrichten abrufen
+    const newsResponse = await fetch(
+      `https://financialmodelingprep.com/api/v3/stock_market/actives?apikey=${FMP_API_KEY}`,
+      { next: { revalidate: 60 } }
+    );
+    
+    const activesData = await newsResponse.json();
+    
+    // Nachrichten formatieren
+    const newsData = Array.isArray(activesData) 
+      ? activesData.slice(0, 5).map(item => ({
+          title: `${item.symbol} - ${item.changesPercentage.toFixed(2)}%`,
+          text: `Price: ${item.price.toFixed(2)} | Change: ${item.change.toFixed(2)} | Volume: ${item.volume}`,
+          symbol: item.symbol,
+          publishedDate: new Date().toISOString()
+        }))
+      : [];
+    
+    // Extrahieren der Indexwerte
+    const data = {
+      spy: indicesData.find(q => q.symbol === 'SPY') || fallbackData.spy,
+      qqq: indicesData.find(q => q.symbol === 'QQQ') || fallbackData.qqq,
+      vix: indicesData.find(q => q.symbol === 'VIX') || fallbackData.vix,
+      tlt: indicesData.find(q => q.symbol === 'TLT') || fallbackData.tlt,
+      iwm: indicesData.find(q => q.symbol === 'IWM') || fallbackData.iwm,
+      dxy: indicesData.find(q => q.symbol === 'DXY') || fallbackData.dxy,
+      watchlist: Array.isArray(watchlistData) ? watchlistData : [],
+      news: newsData
     };
+    
+    return data;
   } catch (error) {
     console.error('Error fetching market data:', error);
-    // Return fallback data
-    return {
-      spy: { change: 0 },
-      qqq: { change: 0 },
-      watchlist: [],
-      news: []
-    };
+    return fallbackData;
   }
 }
 
 export default async function DashboardPage() {
-  const { spy, qqq, watchlist, news } = await getMarketData();
+  const { spy, qqq, vix, tlt, iwm, dxy, watchlist, news } = await getMarketData();
+  
+  // Funktion zur Bestimmung der Textfarbe basierend auf Prozentänderung
+  const getChangeColor = (change: number) => {
+    return change > 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500';
+  };
+  
   return (
     <div className="space-y-8">
       <div>
@@ -48,97 +97,201 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">SPY Trend</CardTitle>
-            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {spy && spy.changesPercentage > 0 ? 'Bullisch' : 'Bärisch'}
+            <CardTitle className="text-sm font-medium">SPY</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${spy.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              S&P 500 ETF
             </div>
-            <p className="text-xs text-muted-foreground">
-              {spy && spy.changesPercentage > 0 ? '+' : ''}{spy && spy.changesPercentage ? spy.changesPercentage.toFixed(2) : '0.00'}% im Tagesvergleich
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">QQQ Trend</CardTitle>
-            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {qqq && qqq.changesPercentage > 0 ? 'Bullisch' : 'Bärisch'}
+            <div className="text-xl font-bold">
+              ${spy.price ? spy.price.toFixed(2) : '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {qqq && qqq.changesPercentage > 0 ? '+' : ''}{qqq && qqq.changesPercentage ? qqq.changesPercentage.toFixed(2) : '0.00'}% im Tagesvergleich
+            <p className={`text-sm font-medium ${getChangeColor(spy.changesPercentage)}`}>
+              {spy.changesPercentage > 0 ? '+' : ''}{spy.changesPercentage.toFixed(2)}%
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Aktive Setups</CardTitle>
-            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">QQQ</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${qqq.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              Nasdaq 100 ETF
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">
-              3 neue in den letzten 24h
+            <div className="text-xl font-bold">
+              ${qqq.price ? qqq.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(qqq.changesPercentage)}`}>
+              {qqq.changesPercentage > 0 ? '+' : ''}{qqq.changesPercentage.toFixed(2)}%
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Performance</CardTitle>
-            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">VIX</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${vix.changesPercentage < 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              Volatilität
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2.1%</div>
-            <p className="text-xs text-muted-foreground">
-              Diese Woche
+            <div className="text-xl font-bold">
+              {vix.price ? vix.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(vix.changesPercentage * -1)}`}>
+              {vix.changesPercentage > 0 ? '+' : ''}{vix.changesPercentage.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">TLT</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${tlt.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              US-Anleihen 20Y
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold">
+              ${tlt.price ? tlt.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(tlt.changesPercentage)}`}>
+              {tlt.changesPercentage > 0 ? '+' : ''}{tlt.changesPercentage.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">IWM</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${iwm.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              Russell 2000
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold">
+              ${iwm.price ? iwm.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(iwm.changesPercentage)}`}>
+              {iwm.changesPercentage > 0 ? '+' : ''}{iwm.changesPercentage.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">DXY</CardTitle>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${dxy.changesPercentage < 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              US Dollar Index
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold">
+              {dxy.price ? dxy.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(dxy.changesPercentage * -1)}`}>
+              {dxy.changesPercentage > 0 ? '+' : ''}{dxy.changesPercentage.toFixed(2)}%
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Marktübersicht</CardTitle>
-            <CardDescription>
-              Ausgewählte Indizes und Aktien-Charts
-            </CardDescription>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Client-Komponente für das Setups-Modal */}
+        <SetupsModal setupsCount={12} newSetupsCount={3} />
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Markt-Status</CardTitle>
+            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center bg-muted/20">
-            <p className="text-sm text-muted-foreground">Chart wird geladen...</p>
+          <CardContent>
+            <div className={`text-2xl font-bold ${(spy.changesPercentage + qqq.changesPercentage)/2 > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {(spy.changesPercentage + qqq.changesPercentage)/2 > 1 ? 'Bullisch' : 
+               (spy.changesPercentage + qqq.changesPercentage)/2 > 0 ? 'Leicht Bullisch' : 
+               (spy.changesPercentage + qqq.changesPercentage)/2 > -1 ? 'Leicht Bärisch' : 'Bärisch'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              SPY+QQQ Avg: {((spy.changesPercentage + qqq.changesPercentage)/2).toFixed(2)}%
+            </p>
           </CardContent>
         </Card>
         
-        <Card className="col-span-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Risiko-Indikatoren</CardTitle>
+            <HelpCircleIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${vix.price > 20 ? 'text-amber-600' : vix.price > 30 ? 'text-red-600' : 'text-green-600'}`}>
+              {vix.price > 30 ? 'Hoch' : vix.price > 20 ? 'Mittel' : 'Niedrig'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              VIX: {vix.price ? vix.price.toFixed(2) : '0.00'} | {vix.changesPercentage > 0 ? '+' : ''}{vix.changesPercentage.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
+        <Card>
           <CardHeader>
-            <CardTitle>Ihre Watchlist</CardTitle>
+            <CardTitle>Anstehende Ereignisse</CardTitle>
             <CardDescription>
-              Symbole, die Sie beobachten
+              Wichtige Termine und wirtschaftliche Ereignisse
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<div className="h-[300px] flex items-center justify-center"><p className="text-sm text-muted-foreground">Wird geladen...</p></div>}>
-              <div className="space-y-4">
-                {watchlist.map((stock: any) => (
-                  <div key={stock.symbol} className="flex justify-between items-center pb-2 border-b">
-                    <div className="font-medium">{stock.symbol}</div>
-                    <div className={stock.changesPercentage > 0 ? 'text-green-600' : 'text-red-600'}>
-                      ${stock.price ? stock.price.toFixed(2) : '0.00'} ({stock.changesPercentage > 0 ? '+' : ''}{stock.changesPercentage ? stock.changesPercentage.toFixed(2) : '0.00'}%)
-                    </div>
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <div>
+                  <p className="font-medium">FED Zinsentscheidung</p>
+                  <p className="text-xs text-muted-foreground">Meeting der Federal Reserve zum Leitzins</p>
+                </div>
+                <div className="flex items-center">
+                  <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 mr-2">Wichtig</div>
+                  <p className="text-xs font-medium">13.12.2023</p>
+                </div>
               </div>
-            </Suspense>
+              
+              <div className="flex items-center justify-between border-b pb-2">
+                <div>
+                  <p className="font-medium">US CPI Daten</p>
+                  <p className="text-xs text-muted-foreground">Inflationsdaten für den US-Markt</p>
+                </div>
+                <div className="flex items-center">
+                  <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 mr-2">Wichtig</div>
+                  <p className="text-xs font-medium">10.12.2023</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between border-b pb-2">
+                <div>
+                  <p className="font-medium">Arbeitsmarktbericht</p>
+                  <p className="text-xs text-muted-foreground">US Non-Farm Payrolls</p>
+                </div>
+                <div className="flex items-center">
+                  <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 mr-2">Mittel</div>
+                  <p className="text-xs font-medium">05.12.2023</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pb-2">
+                <div>
+                  <p className="font-medium">Earnings Season</p>
+                  <p className="text-xs text-muted-foreground">Beginn des nächsten Quartalszahlen-Zyklus</p>
+                </div>
+                <div className="flex items-center">
+                  <div className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 mr-2">Info</div>
+                  <p className="text-xs font-medium">15.01.2024</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

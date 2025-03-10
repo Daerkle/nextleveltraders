@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { WatchlistItem } from '@/types/watchlist'
 import { useWatchlistStore } from '@/stores/use-watchlist-store'
+import { YahooQuote } from '@/lib/yahoo-finance'
 
 interface EditableWatchlistProps {
   initialItems: WatchlistItem[]
@@ -72,6 +73,33 @@ export function EditableWatchlist({ initialItems, onAddSymbol, onRemoveSymbol }:
     console.log('Store items:', storeItems.length, 'Elemente', storeItems);
   }, [initialItems])
 
+  // Funktion zum Anzeigen von Preis und Änderung im Yahoo-Finance-Format
+  const renderPrice = (item: WatchlistItem) => {
+    // Für Yahoo-Finance Daten
+    if ('regularMarketPrice' in item && item.regularMarketPrice !== undefined) {
+      const yahooItem = item as unknown as YahooQuote;
+      return (
+        <div className={yahooItem.regularMarketChangePercent > 0 ? 'text-green-600' : 'text-red-600'}>
+          ${yahooItem.regularMarketPrice.toFixed(2)} ({yahooItem.regularMarketChangePercent > 0 ? '+' : ''}{yahooItem.regularMarketChangePercent.toFixed(2)}%)
+        </div>
+      );
+    }
+    
+    // Für FMP Daten (älteres Format)
+    if ('price' in item && item.price !== undefined) {
+      return (
+        <div className={item.changesPercentage && item.changesPercentage > 0 ? 'text-green-600' : 'text-red-600'}>
+          ${item.price.toFixed(2)} ({item.changesPercentage && item.changesPercentage > 0 ? '+' : ''}{(item.changesPercentage || 0).toFixed(2)}%)
+        </div>
+      );
+    }
+    
+    // Wenn keine Preisdaten verfügbar sind
+    return (
+      <div className="text-xs text-muted-foreground">Lade Daten...</div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -102,13 +130,7 @@ export function EditableWatchlist({ initialItems, onAddSymbol, onRemoveSymbol }:
             <div key={stock.symbol} className="flex justify-between items-center pb-2 border-b group">
               <div className="font-medium">{stock.symbol}</div>
               <div className="flex items-center gap-4">
-                {stock.price !== undefined ? (
-                  <div className={stock.changesPercentage && stock.changesPercentage > 0 ? 'text-green-600' : 'text-red-600'}>
-                    ${stock.price.toFixed(2)} ({stock.changesPercentage && stock.changesPercentage > 0 ? '+' : ''}{(stock.changesPercentage || 0).toFixed(2)}%)
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground">Lade Daten...</div>
-                )}
+                {renderPrice(stock)}
                 <Button
                   variant="ghost"
                   size="icon"

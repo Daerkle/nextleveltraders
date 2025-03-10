@@ -239,44 +239,41 @@ export function getTrendStatus(cloud5_12: EMACloud, cloud34_50: EMACloud): {
     slow: cloud34_50.slow[cloud34_50.slow.length - 1]
   };
   
-  // Intraday Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+  // Get the latest closing price
+  const latestPrice = cloud5_12.fast[cloud5_12.fast.length - 1];
+
+  // Intraday Trend (5-12)
   let intradayTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-  
-  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+  const intraCloud = latestPrice > latest5_12.slow;
+  if (intraCloud && latest5_12.fast > latest5_12.slow) {
     intradayTrend = 'bullish';
-  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+  } else if (!intraCloud && latest5_12.fast < latest5_12.slow) {
     intradayTrend = 'bearish';
-  } else {
-    intradayTrend = 'neutral';
   }
-  
-  // Swing Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+
+  // Swing Trend (34-50)
   let swingTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-  
-  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+  const swingCloud = latestPrice > latest34_50.slow;
+  if (swingCloud) {
     swingTrend = 'bullish';
-  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+  } else if (!swingCloud) {
     swingTrend = 'bearish';
-  } else {
-    swingTrend = 'neutral';
   }
-  
-  // Position Trend - Kombination aus 5-12 und 34-50 EMA Clouds
+
+  // Position Trend (Overall)
   let positionTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
   
-  if (latest5_12.fast > latest5_12.slow && latest34_50.fast > latest34_50.slow) {
+  if (latestPrice > latest34_50.slow && latest5_12.fast > latest5_12.slow) {
     positionTrend = 'bullish';
-  } else if (latest5_12.fast < latest5_12.slow && latest34_50.fast < latest34_50.slow) {
+  } else if (latestPrice < latest34_50.slow && latest5_12.fast < latest5_12.slow) {
     positionTrend = 'bearish';
-  } else {
-    positionTrend = 'neutral';
   }
+
+  // Calculate trend strength based on distance from zone boundaries
+  const shortTermStrength = Math.abs((latestPrice - latest5_12.slow) / latest5_12.slow * 100);
+  const longTermStrength = Math.abs((latestPrice - latest34_50.slow) / latest34_50.slow * 100);
   
-  // Calculate trend strength (0-100)
-  const intradayDiff = Math.abs(latest5_12.fast - latest5_12.slow) / latest5_12.slow * 100;
-  const positionDiff = Math.abs(latest34_50.fast - latest34_50.slow) / latest34_50.slow * 100;
-  
-  const strength = Math.min(100, Math.round((intradayDiff + positionDiff) * 5));
+  const strength = Math.min(100, Math.round((shortTermStrength + longTermStrength) * 2));
   
   return {
     intradayTrend,

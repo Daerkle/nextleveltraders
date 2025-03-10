@@ -45,7 +45,7 @@ export const PLANS = {
   [SUBSCRIPTION_PLANS.PRO]: {
     name: "Pro",
     description: "Vollständiger Zugriff auf alle Trading-Features",
-    price: 2900, // 29.00 EUR
+    price: 4900, // 49.00 EUR
     features: Object.entries(FEATURES).map(([key, value]) => ({
       name: key,
       value: value.pro,

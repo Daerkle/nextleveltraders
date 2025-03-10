@@ -53,6 +53,7 @@ export async function setupSubscriptionPlans() {
     recurring: {
       interval: 'month'
     },
+    lookup_key: 'pro_monthly',
     metadata: {
       type: 'monthly'
     }
@@ -66,6 +67,7 @@ export async function setupSubscriptionPlans() {
     recurring: {
       interval: 'year'
     },
+    lookup_key: 'pro_yearly',
     metadata: {
       type: 'yearly'
     }
@@ -112,6 +114,7 @@ interface CreateCheckoutSessionParams {
   successUrl: string
   cancelUrl: string
   trialDays?: number
+  collectPaymentMethod?: boolean
 }
 
 export const createCheckoutSession = async ({
@@ -121,27 +124,41 @@ export const createCheckoutSession = async ({
   mode = 'subscription',
   successUrl,
   cancelUrl,
-  trialDays = 4
+  trialDays = 4,
+  collectPaymentMethod = true
 }: CreateCheckoutSessionParams) => {
-  return await stripe.checkout.sessions.create({
+  const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData = {
+    trial_period_days: trialDays,
+    metadata: { userId }
+  };
+
+  if (collectPaymentMethod) {
+    subscriptionData.trial_settings = {
+      end_behavior: {
+        missing_payment_method: 'cancel'
+      }
+    };
+  }
+
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
     mode,
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    subscription_data: {
-      trial_period_days: trialDays,
-      metadata: { userId }
-    },
+    payment_method_collection: collectPaymentMethod ? 'always' : 'if_required',
+    subscription_data: subscriptionData,
     metadata: { userId }
-  })
+  };
+
+  return await stripe.checkout.sessions.create(sessionConfig);
 }
 
 export const createCustomerPortalSession = async (customerId: string) => {
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
   })
   return session
 }
@@ -153,14 +170,33 @@ interface SubscriptionPlan {
 
 export async function getSubscriptionPlan(userId: string): Promise<SubscriptionPlan> {
   try {
-    const subscriptions = await stripe.subscriptions.list({
-      customer: userId,
-      status: 'active',
-      expand: ['data.plan']
+    // Suche Customer anhand der Clerk User ID
+    const customers = await stripe.customers.search({
+      query: `metadata['clerkUserId']:'${userId}'`,
+      expand: ['data.subscriptions']
     });
 
-    const subscription = subscriptions.data[0];
-    const isPro = subscription?.status === 'active';
+    const customer = customers.data[0];
+    
+    if (!customer) {
+      return {
+        isPro: false,
+        subscription: undefined
+      };
+    }
+
+    // Finde aktive oder trial Subscription
+    const subscription = customer.subscriptions?.data.find(sub => 
+      sub.status === 'active' || 
+      sub.status === 'trialing'
+    );
+
+    const isPro = !!subscription && (
+      subscription.status === 'active' || 
+      (subscription.status === 'trialing' && 
+       subscription.trial_end != null && 
+       subscription.trial_end * 1000 > Date.now())
+    );
 
     return {
       isPro,

@@ -1,76 +1,73 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import Stripe from 'stripe';
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { stripe, getSubscriptionPlan } from "@/lib/stripe";
 import { SUBSCRIPTION_PLANS } from "@/config/subscriptions";
-
-// Initialize Stripe client
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
-});
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const session = await auth();
-    const userId = session?.userId;
-    
-    if (!userId) {
+    const authData = await auth();
+    const user = await currentUser();
+
+    if (!authData.userId || !user) {
       return NextResponse.json(
-        {
-          plan: SUBSCRIPTION_PLANS.FREE,
-          isTrialing: false,
-          trialEndsAt: null,
-          status: "inactive",
-        },
+        { error: "Nicht authentifiziert" },
         { status: 401 }
       );
     }
 
-    // Search for customer by userId in metadata
+    // Suche existierenden Customer oder erstelle einen neuen
+    let customer;
     const customers = await stripe.customers.search({
-      query: `metadata["userId"]:"${userId}"`,
+      query: `metadata['clerkUserId']:'${authData.userId}'`,
     });
 
-    // If no customer found
-    if (customers.data.length === 0) {
-      return NextResponse.json({
-        plan: SUBSCRIPTION_PLANS.FREE,
-        isTrialing: false,
-        trialEndsAt: null,
-        status: "inactive",
+    if (customers.data.length > 0) {
+      customer = customers.data[0];
+    } else {
+      // Erstelle neuen Customer
+      customer = await stripe.customers.create({
+        email: user.emailAddresses[0]?.emailAddress,
+        name: user.fullName || undefined,
+        metadata: {
+          clerkUserId: authData.userId,
+        },
       });
     }
 
-    const customer = customers.data[0];
-
-    // Get active subscriptions for the customer
+    // Hole Subscription Details
     const subscriptions = await stripe.subscriptions.list({
       customer: customer.id,
-      status: 'active',
+      status: 'all',
+      expand: ['data.default_payment_method', 'data.plan']
     });
 
-    // If no active subscriptions found
-    if (subscriptions.data.length === 0) {
-      return NextResponse.json({
-        plan: SUBSCRIPTION_PLANS.FREE,
-        isTrialing: false,
-        trialEndsAt: null,
-        status: "inactive",
-      });
-    }
+    // Finde aktive oder trial Subscription
+    const subscription = subscriptions.data.find(sub => 
+      sub.status === 'active' || 
+      sub.status === 'trialing'
+    );
 
-    const subscription = subscriptions.data[0];
-    const priceId = subscription.items.data[0]?.price.id;
+    const isPro = !!subscription && (
+      subscription.status === 'active' || 
+      (subscription.status === 'trialing' && 
+       subscription.trial_end != null && 
+       subscription.trial_end * 1000 > Date.now())
+    );
 
     return NextResponse.json({
-      plan: priceId === SUBSCRIPTION_PLANS.PRO ? SUBSCRIPTION_PLANS.PRO : SUBSCRIPTION_PLANS.FREE,
-      isTrialing: subscription.trial_end ? new Date(subscription.trial_end * 1000) > new Date() : false,
-      trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
-      status: subscription.status,
+      plan: isPro ? SUBSCRIPTION_PLANS.PRO : SUBSCRIPTION_PLANS.FREE,
+      status: subscription?.status || "inactive",
+      isTrialing: subscription?.status === "trialing",
+      trialEndsAt: subscription?.trial_end 
+        ? new Date(subscription.trial_end * 1000).toISOString()
+        : null,
+      subscription,
+      customerId: customer.id
     });
   } catch (error) {
-    console.error("Fehler beim Laden des Subscription-Status:", error);
+    console.error("Subscription Status Error:", error);
     return NextResponse.json(
-      { error: "Interner Server-Fehler" },
+      { error: "Fehler beim Abrufen des Subscription-Status" },
       { status: 500 }
     );
   }

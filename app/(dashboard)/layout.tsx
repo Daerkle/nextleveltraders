@@ -10,26 +10,28 @@ function DashboardContainer({ children }: { children: React.ReactNode }) {
   const { isOpen } = useWatchlistStore();
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Linke Seitenleiste */}
-      <Sidebar />
-      
-      {/* Hauptbereich mit anpassbarer Breite */}
-      <div 
-        className="flex-1 flex flex-col min-h-screen transition-all duration-200"
-        style={{ 
-          marginRight: '0',
-          width: '100%'
+    <div className="min-h-screen bg-background">
+      <div
+        className="flex transition-all duration-200"
+        style={{
+          paddingRight: isOpen ? '300px' : '48px'
         }}
       >
-        <div className="flex-1 overflow-auto">
-          <div className="container py-6">
-            {children}
+        {/* Linke Seitenleiste */}
+        <Sidebar />
+        
+        {/* Hauptbereich */}
+        <main className="flex-1 min-h-screen">
+          <div className="flex-1">
+            <div className="w-full py-6 px-6">
+              {children}
+            </div>
           </div>
-        </div>
+        </main>
       </div>
 
-      {/* Rechte Watchlist-Sidebar ausgeblendet */}
+      {/* Rechte Watchlist-Sidebar */}
+      <WatchlistSidebar />
     </div>
   );
 }

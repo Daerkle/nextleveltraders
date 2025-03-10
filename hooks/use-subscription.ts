@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { SUBSCRIPTION_PLANS } from "@/config/subscriptions"
+import type Stripe from "stripe"
 
 type SubscriptionStatus = "active" | "canceled" | "past_due" | "trialing" | "inactive";
 
@@ -11,10 +12,12 @@ interface SubscriptionStore {
   isPro: boolean
   isLoading: boolean
   dataDelay: number
+  subscription?: Stripe.Subscription
   setPlan: (plan: typeof SUBSCRIPTION_PLANS[keyof typeof SUBSCRIPTION_PLANS]) => void
   setTrialStatus: (isTrialing: boolean, trialEndsAt: string | null) => void
   setStatus: (status: SubscriptionStatus) => void
   setLoading: (isLoading: boolean) => void
+  setSubscription: (subscription?: Stripe.Subscription) => void
 }
 
 export const useSubscription = create<SubscriptionStore>((set, get) => ({
@@ -25,6 +28,7 @@ export const useSubscription = create<SubscriptionStore>((set, get) => ({
   isPro: false,
   isLoading: true,
   dataDelay: 900, // 15 Minuten Standard-Verzögerung
+  subscription: undefined,
   setPlan: (plan) => {
     const isPro = plan === SUBSCRIPTION_PLANS.PRO || get().isTrialing;
     const dataDelay = isPro ? 0 : 900; // 0 für Pro, 15 Minuten für Free
@@ -48,7 +52,8 @@ export const useSubscription = create<SubscriptionStore>((set, get) => ({
     set({ isTrialing, trialEndsAt, isPro, dataDelay });
   },
   setStatus: (status) => set({ status }),
-  setLoading: (isLoading) => set({ isLoading })
+  setLoading: (isLoading) => set({ isLoading }),
+  setSubscription: (subscription) => set({ subscription })
 }))
 
 // Formatiere das Trial-End-Datum

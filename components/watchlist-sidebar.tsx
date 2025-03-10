@@ -17,13 +17,11 @@ export function WatchlistSidebar({ onRemove }: WatchlistSidebarProps = {}) {
     <motion.div
       className={cn(
         "fixed right-0 top-0 h-screen bg-background border-l",
-        "z-50 flex flex-col"
+        "flex flex-col"
       )}
-      initial={{ width: 0 }}
       animate={{
         width: isOpen ? 300 : 48,
-        opacity: 1,
-        transition: { duration: 0.2 }
+        transition: { duration: 0.2, ease: "easeOut" }
       }}
       onHoverStart={() => !isOpen && setOpen(true)}
       onHoverEnd={() => isOpen && setOpen(false)}

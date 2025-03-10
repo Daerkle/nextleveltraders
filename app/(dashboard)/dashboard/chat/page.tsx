@@ -133,9 +133,9 @@ export default function ChatPage() {
           Nutzen Sie unseren KI-Assistenten für Trading-Analysen und Marktinformationen
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-        <div className="md:col-span-4">
-          <Card className="h-[calc(100vh-220px)] flex flex-col">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr,300px] gap-6">
+        <div>
+          <Card className="h-[calc(100vh-180px)] flex flex-col">
             <CardHeader>
               <CardTitle>Chat mit NeXus</CardTitle>
               <CardDescription>
@@ -189,8 +189,8 @@ export default function ChatPage() {
             </CardFooter>
           </Card>
         </div>
-        <div className="hidden md:block md:col-span-2 space-y-6">
-          <Card>
+        <div className="hidden md:block space-y-6">
+          <Card className="sticky top-6">
             <CardHeader>
               <CardTitle>Trading & Investment Vorlagen</CardTitle>
               <CardDescription>

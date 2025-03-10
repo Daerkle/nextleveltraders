@@ -1,14 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { 
-  createChart, 
-  CandlestickSeries, 
-  HistogramSeries, 
-  LineSeries
+import { useEffect, useRef, useState, useMemo } from 'react';
+import {
+  createChart,
+  CandlestickSeries,
+  HistogramSeries,
+  LineSeries,
+  Time,
+  UTCTimestamp,
+  LineWidth
 } from 'lightweight-charts';
-import type { HistoricalPrice } from '@/lib/fmp';
-import { calculateEMACloud, calculatePivots, type PivotLevels } from '@/lib/indicators';
+import { HistoricalPrice } from '@/lib/pivots/types';
+import { calculateEMACloud } from '@/lib/indicators';
+import { PivotCalculator } from '@/lib/pivots/calculator';
+import { 
+  aggregateHistoricalData,
+  getPivotLevelColor,
+  getPivotLevelStyle
+} from '@/lib/pivots/utils';
 
 interface PriceChartProps {
   data: HistoricalPrice[];
@@ -16,76 +25,8 @@ interface PriceChartProps {
   width?: number;
   showRipsterClouds?: boolean;
   showPivots?: boolean;
-  timeframe?: string; // z.B. '1m', '15m', '1h', '4h', '1d'
+  timeframe?: '5m' | '15m' | '1h' | '4h' | '1d';
 }
-
-// Hilfsfunktion für die Zeitrahmen
-const getPivotType = (timeframe: string): string => {
-  if (!timeframe) return 'daily';
-  
-  // Extrahiere die Zahl und Einheit aus dem Timeframe
-  const match = timeframe.match(/(\d+)([mhd])/);
-  if (!match) return 'daily';
-  
-  const [_, value, unit] = match;
-  const numValue = parseInt(value);
-  
-  if (unit === 'm' && numValue <= 30) return 'daily';
-  if ((unit === 'm' && numValue > 30) || (unit === 'h' && numValue <= 4)) return 'weekly';
-  return 'monthly';
-};
-
-// Calculate pivots based on timeframe
-const calculateTimeBasedPivots = (data: HistoricalPrice[], pivotType: string): PivotLevels => {
-  // Use daily pivots by default
-  if (!data || data.length === 0) {
-    return { pp: 0, r1: 0, r2: 0, r3: 0, s1: 0, s2: 0, s3: 0 };
-  }
-  
-  let pivots = calculatePivots(data);
-  
-  // For weekly pivots - based on last 5 trading days
-  if (pivotType === 'weekly') {
-    const weekData = data.slice(-5);
-    if (weekData.length > 0) {
-      const high = Math.max(...weekData.map(d => d.high));
-      const low = Math.min(...weekData.map(d => d.low));
-      const close = weekData[weekData.length - 1].close;
-      
-      const pp = (high + low + close) / 3;
-      const r1 = (2 * pp) - low;
-      const s1 = (2 * pp) - high;
-      const r2 = pp + (high - low);
-      const s2 = pp - (high - low);
-      const r3 = high + 2 * (pp - low);
-      const s3 = low - 2 * (high - pp);
-      
-      pivots = { pp, r1, r2, r3, s1, s2, s3 };
-    }
-  }
-  
-  // For monthly pivots - based on last ~20 trading days
-  else if (pivotType === 'monthly') {
-    const monthData = data.slice(-20);
-    if (monthData.length > 0) {
-      const high = Math.max(...monthData.map(d => d.high));
-      const low = Math.min(...monthData.map(d => d.low));
-      const close = monthData[monthData.length - 1].close;
-      
-      const pp = (high + low + close) / 3;
-      const r1 = (2 * pp) - low;
-      const s1 = (2 * pp) - high;
-      const r2 = pp + (high - low);
-      const s2 = pp - (high - low);
-      const r3 = high + 2 * (pp - low);
-      const s3 = low - 2 * (high - pp);
-      
-      pivots = { pp, r1, r2, r3, s1, s2, s3 };
-    }
-  }
-  
-  return pivots;
-};
 
 export function PriceChart({ 
   data, 
@@ -98,33 +39,31 @@ export function PriceChart({
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
   const seriesRef = useRef<any[]>([]);
+  const pivotCalculator = useMemo(() => new PivotCalculator(), []);
   
-  // Important: pivotType state depends on timeframe
-  const [pivotType, setPivotType] = useState<string>(() => 
-    getPivotType(timeframe)
-  );
+  const [aggregatedData, setAggregatedData] = useState<HistoricalPrice[]>([]);
   
-  // Update pivotType when timeframe changes
+  // Daten-Aggregation wenn sich Timeframe oder Daten ändern
   useEffect(() => {
-    setPivotType(getPivotType(timeframe));
-  }, [timeframe]);
+    setAggregatedData(aggregateHistoricalData(data, timeframe));
+  }, [data, timeframe]);
 
-  // Main effect for chart creation and updates
+  // Haupteffekt für Chart-Erstellung und Updates
   useEffect(() => {
-    if (!chartContainerRef.current || !data.length) return;
+    if (!chartContainerRef.current || !aggregatedData.length) return;
     
-    // Cleanup chart instance if it exists
+    // Cleanup
     if (chartRef.current) {
       chartRef.current.remove();
       chartRef.current = null;
       seriesRef.current = [];
     }
     
-    // Create new chart instance
+    // Chart erstellen
     const chart = createChart(chartContainerRef.current);
     chartRef.current = chart;
     
-    // Set chart options
+    // Chart-Optionen
     chart.applyOptions({
       layout: {
         background: { color: 'transparent' },
@@ -144,28 +83,23 @@ export function PriceChart({
       },
     });
 
-    // Format and sort data chronologically by time
-    const formattedData = [...data]
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map(item => ({
-        time: new Date(item.date).getTime() / 1000,
-        open: item.open,
-        high: item.high,
-        low: item.low,
-        close: item.close,
-      }))
-      .sort((a, b) => a.time - b.time);
+    // Daten formatieren
+    const formattedData = aggregatedData.map(item => ({
+      time: (new Date(item.date).getTime() / 1000) as UTCTimestamp,
+      open: item.open,
+      high: item.high,
+      low: item.low,
+      close: item.close,
+    }));
 
-    const volumeData = data
-      .map(item => ({
-        time: new Date(item.date).getTime() / 1000,
-        value: item.volume,
-        color: item.close >= item.open ? '#22c55e50' : '#ef444450',
-      }))
-      .sort((a, b) => a.time - b.time);
+    const volumeData = aggregatedData.map(item => ({
+      time: (new Date(item.date).getTime() / 1000) as UTCTimestamp,
+      value: item.volume,
+      color: item.close >= item.open ? '#22c55e50' : '#ef444450',
+    }));
 
     try {
-      // Create candlestick series
+      // Candlestick-Serie
       const candlestickSeries = chart.addSeries(CandlestickSeries);
       seriesRef.current.push(candlestickSeries);
       
@@ -179,7 +113,7 @@ export function PriceChart({
       
       candlestickSeries.setData(formattedData);
 
-      // Create volume series
+      // Volumen-Serie
       const volumeSeries = chart.addSeries(HistogramSeries, {
         priceFormat: {
           type: 'volume',
@@ -203,10 +137,10 @@ export function PriceChart({
       
       volumeSeries.setData(volumeData);
 
-      // Add EMAs if enabled
+      // EMAs wenn aktiviert
       if (showRipsterClouds) {
-        const cloud5_12 = calculateEMACloud(data, 5, 12);
-        const cloud34_50 = calculateEMACloud(data, 34, 50);
+        const cloud5_12 = calculateEMACloud(aggregatedData, 5, 12);
+        const cloud34_50 = calculateEMACloud(aggregatedData, 34, 50);
         
         const emaSeriesConfigs = [
           { data: cloud5_12.fast, color: '#22c55e80', title: 'EMA 5' },
@@ -220,84 +154,88 @@ export function PriceChart({
             const series = chart.addSeries(LineSeries);
             seriesRef.current.push(series);
             
-            series.applyOptions({ 
-              color, 
-              lineWidth: 1.5,
+            series.applyOptions({
+              color,
+              lineWidth: 1 as LineWidth,
               title,
               lastValueVisible: true,
             });
             
-            series.setData(
-              emaData.map((value, i) => ({
-                time: new Date(cloud5_12.dates[i]).getTime() / 1000,
+            // EMA-Daten eindeutig sortieren
+            const uniqueEmaDates = new Set<UTCTimestamp>();
+            const sortedEmaData = emaData
+              .map((value, i) => ({
+                time: (new Date(cloud5_12.dates[i]).getTime() / 1000) as UTCTimestamp,
                 value,
               }))
-            );
+              .filter(item => {
+                if (uniqueEmaDates.has(item.time)) {
+                  return false;
+                }
+                uniqueEmaDates.add(item.time);
+                return true;
+              })
+              .sort((a, b) => Number(a.time) - Number(b.time));
+
+            series.setData(sortedEmaData);
           }
         });
       }
 
-      // Add pivot points if enabled
+      // Pivot-Punkte wenn aktiviert
       if (showPivots && formattedData.length > 0) {
-        const pivots = calculateTimeBasedPivots(data, pivotType);
+        const currentPrice = formattedData[formattedData.length - 1].close;
+        const pivots = pivotCalculator.calculate(aggregatedData, timeframe, {
+          method: 'standard',
+          levels: 5
+        });
         
+        const pivotLevels = pivotCalculator.analyzePivotLevels(pivots, currentPrice);
         const lastTime = formattedData[formattedData.length - 1].time;
         const timeStart = formattedData[0].time;
 
-        const pivotLineStyle = 2; // 2 = Dashed line style
-        const pivotLevels: [keyof PivotLevels, string, number, string][] = [
-          ['r3', '#dc2626', pivots.r3 || 0, 'R3'],
-          ['r2', '#ef4444', pivots.r2 || 0, 'R2'],
-          ['r1', '#f97316', pivots.r1 || 0, 'R1'],
-          ['pp', '#16a34a', pivots.pp || 0, 'PP'],
-          ['s1', '#f97316', pivots.s1 || 0, 'S1'],
-          ['s2', '#ef4444', pivots.s2 || 0, 'S2'],
-          ['s3', '#dc2626', pivots.s3 || 0, 'S3'],
-        ];
-
-        // Add information text
+        // Info-Text für Pivot-Typ
         const infoSeries = chart.addSeries(LineSeries);
         seriesRef.current.push(infoSeries);
         
         infoSeries.applyOptions({
           color: 'transparent',
           lastValueVisible: true,
-          title: `${pivotType.charAt(0).toUpperCase() + pivotType.slice(1)} Pivots`,
+          title: `${timeframe.toUpperCase()} Pivots`,
         });
         
         infoSeries.setData([
-          { time: timeStart, value: pivots.pp || 0 }
+          { time: timeStart, value: pivots.pp }
         ]);
 
-        pivotLevels.forEach(([level, color, value, label]) => {
-          if (value !== undefined && !isNaN(value) && value !== 0) {
-            const series = chart.addSeries(LineSeries);
-            seriesRef.current.push(series);
-            
-            series.applyOptions({
-              color,
-              lineWidth: 1,
-              lineStyle: pivotLineStyle,
-              title: label,
-              lastValueVisible: true,
-            });
+        // Pivot-Levels zeichnen
+        pivotLevels.forEach(({ level, price }) => {
+          const series = chart.addSeries(LineSeries);
+          seriesRef.current.push(series);
+          
+          series.applyOptions({
+            color: getPivotLevelColor(level),
+            lineWidth: 1 as LineWidth,
+            lineStyle: getPivotLevelStyle(level),
+            title: level.toUpperCase(),
+            lastValueVisible: true,
+          });
 
-            series.setData([
-              { time: timeStart, value },
-              { time: lastTime, value },
-            ]);
-          }
+          series.setData([
+            { time: timeStart as UTCTimestamp, value: price },
+            { time: lastTime as UTCTimestamp, value: price },
+          ]);
         });
       }
 
-      // Fit content
+      // Content anpassen
       chart.timeScale().fitContent();
       
     } catch (error) {
       console.error('Error creating chart:', error);
     }
 
-    // Resize handler
+    // Resize Handler
     const handleResize = () => {
       if (chartRef.current && chartContainerRef.current) {
         chartRef.current.resize(
@@ -312,14 +250,13 @@ export function PriceChart({
     return () => {
       window.removeEventListener('resize', handleResize);
       
-      // Cleanup
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
         seriesRef.current = [];
       }
     };
-  }, [data, height, showRipsterClouds, showPivots, pivotType, timeframe]); // timeframe hinzugefügt
+  }, [aggregatedData, height, showRipsterClouds, showPivots, timeframe, pivotCalculator]);
 
   return (
     <div 

@@ -1,10 +1,9 @@
+import { SubscriptionDetails } from "@/components/subscription/subscription-details";
+import { TrialCountdown } from "@/components/subscription/trial-countdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { formatDate } from "@/lib/utils";
-import { getSubscriptionPlan } from "@/lib/stripe";
+import { Button } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
-import { SubscriptionActions } from "@/components/subscription/subscription-actions";
 
 export default async function BillingPage() {
   const { userId } = await auth();
@@ -12,8 +11,6 @@ export default async function BillingPage() {
   if (!userId) {
     throw new Error("Nicht authentifiziert");
   }
-  
-  const plan = await getSubscriptionPlan(userId);
   
   return (
     <div className="space-y-8">
@@ -24,62 +21,11 @@ export default async function BillingPage() {
         </p>
       </div>
 
-      {/* Subscription Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ihr Plan</CardTitle>
-          <CardDescription>
-            Sie nutzen derzeit den {plan.isPro ? "Pro" : "Basis"}-Plan
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {plan.isPro ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">NextLevelTraders Pro</p>
-                  <p className="text-sm text-muted-foreground">
-                    Vollständiger Zugriff auf alle Trading-Features
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">€29,00/Monat</p>
-                  {plan.subscription?.cancel_at_period_end && (
-                    <p className="text-sm text-muted-foreground">
-                      Läuft aus am {formatDate(new Date(plan.subscription.current_period_end * 1000))}
-                    </p>
-                  )}
-                </div>
-              </div>
+      {/* Trial Countdown */}
+      <TrialCountdown />
 
-              {plan.subscription?.cancel_at_period_end && (
-                <Alert>
-                  <AlertTitle>Ihr Abonnement läuft aus</AlertTitle>
-                  <AlertDescription>
-                    Ihr Pro-Plan läuft am {formatDate(new Date(plan.subscription.current_period_end * 1000))} aus.
-                    Sie können Ihr Abonnement jederzeit reaktivieren.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <SubscriptionActions 
-                isPro={plan.isPro}
-                subscription={plan.subscription}
-              />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <p className="font-medium">NextLevelTraders Basis</p>
-                <p className="text-sm text-muted-foreground">
-                  Kostenloser Plan mit eingeschränkten Funktionen
-                </p>
-              </div>
-              <SubscriptionActions isPro={false} />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Subscription Details */}
+      <SubscriptionDetails />
 
       {/* Feature Comparison */}
       <Card>

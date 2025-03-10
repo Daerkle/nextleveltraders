@@ -131,11 +131,11 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-screen flex-shrink-0 hidden md:flex md:flex-col border-r border-border bg-sidebar text-sidebar-foreground",
+        "h-screen sticky top-0 flex-shrink-0 hidden md:flex md:flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-width overflow-hidden",
         className
       )}
       animate={{
-        width: animate ? (open ? "300px" : "80px") : "300px",
+        width: animate ? (open ? "clamp(250px, 20vw, 400px)" : "clamp(64px, 5vw, 80px)") : "clamp(250px, 20vw, 400px)",
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -146,13 +146,22 @@ export const DesktopSidebar = ({
           href="/dashboard"
           className="flex items-center gap-3"
         >
-          <Image
-            src="/logo.png"
-            alt="NextLevelTraders Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8 object-contain"
-          />
+          <>
+            <Image
+              src="/logo.png"
+              alt="NextLevelTraders Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain hidden dark:block"
+            />
+            <Image
+              src="/logo_weißbg.png"
+              alt="NextLevelTraders Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain dark:hidden"
+            />
+          </>
           {open && (
             <div className="flex items-baseline">
               <span className="font-heading font-bold text-xl">Next</span>

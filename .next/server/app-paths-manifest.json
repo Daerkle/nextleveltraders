@@ -1,6 +1,8 @@
 {
-  "/page": "app/page.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js",
-  "/(dashboard)/dashboard/charts/page": "app/(dashboard)/dashboard/charts/page.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/api/market-data/route": "app/api/market-data/route.js",
+  "/api/subscription/status/route": "app/api/subscription/status/route.js",
+  "/api/watchlist/route": "app/api/watchlist/route.js",
+  "/api/market-data/quotes/route": "app/api/market-data/quotes/route.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
 }

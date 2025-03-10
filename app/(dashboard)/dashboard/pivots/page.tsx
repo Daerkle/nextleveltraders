@@ -2,7 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchSymbol } from '@/components/search-symbol';
 import { type HistoricalPrice } from '@/lib/fmp';
-import { calculateTimeBasedPivots, calculateDeMarkPivots, type DeMarkPivotLevels, type StandardPivotLevels } from '@/lib/indicators';
+import { PivotCalculator } from '@/lib/pivots/calculator';
+import { type PivotPoints } from '@/lib/pivots/types';
 
 // Calculate the number of times a price level was touched
 function getTouches(prices: HistoricalPrice[], level: number): string {
@@ -58,65 +59,76 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
   const currentPrice = quote[0].price;
   const currentQuote = quote[0];
 
+  // Initialize pivot calculator
+  const calculator = new PivotCalculator();
+  
+  // Map UI timeframes to calculator configurations
+  const timeframeConfig = {
+    'daily': {
+      timeframe: '1d',
+      lookback: 1,
+      method: 'standard' as const
+    },
+    'weekly': {
+      timeframe: '1d',
+      lookback: 5,
+      method: 'standard' as const
+    },
+    'monthly': {
+      timeframe: '1d',
+      lookback: 21,
+      method: 'standard' as const
+    },
+    'quarterly': {
+      timeframe: '1d',
+      lookback: 63,
+      method: 'standard' as const
+    },
+    'yearly': {
+      timeframe: '1d',
+      lookback: 252,
+      method: 'standard' as const
+    }
+  } as const;
+
   // Calculate pivot levels for different timeframes
   const timeframes = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
   const pivotResults = timeframes.map(tf => {
-    let relevantPrices;
+    const config = timeframeConfig[tf];
+    
+    // Validiere und selektiere Preisdaten
+    const historicalData = (() => {
+      if (prices.length < 2) return [];
+      if (prices.length < (config.lookback + 1)) return [prices[1]];
+      return prices.slice(1, config.lookback + 1);
+    })();
 
-    // Ensure we have at least 2 days of data
-    if (prices.length < 2) {
-      return {
-        timeframe: tf,
-        levels: { r3: 0, r2: 0, r1: 0, pp: 0, s1: 0, s2: 0, s3: 0 } as StandardPivotLevels,
-        demark: { x: 0, r1: 0, pp: 0, s1: 0 }
-      };
-    }
-
-    // Select data based on timeframe
-    switch (tf) {
-      case 'daily':
-        // For daily, use yesterday's data
-        relevantPrices = [prices[1]];
-        break;
-      case 'weekly':
-        // For weekly, use last 5 trading days
-        relevantPrices = prices.length >= 6 ? prices.slice(1, 6) : [prices[1]];
-        break;
-      case 'monthly':
-        // For monthly, use last 21 trading days
-        relevantPrices = prices.length >= 22 ? prices.slice(1, 22) : [prices[1]];
-        break;
-      case 'quarterly':
-        // For quarterly, use last 63 trading days
-        relevantPrices = prices.length >= 64 ? prices.slice(1, 64) : [prices[1]];
-        break;
-      case 'yearly':
-        // For yearly, use last 252 trading days
-        relevantPrices = prices.length >= 253 ? prices.slice(1, 253) : [prices[1]];
-        break;
-      default:
-        relevantPrices = [prices[1]];
-    }
-
+    // Berechne Pivot-Levels
     return {
       timeframe: tf,
-      levels: calculateTimeBasedPivots(relevantPrices, tf, 'standard') as StandardPivotLevels,
-      demark: calculateDeMarkPivots(relevantPrices.slice(0, 1))
+      levels: calculator.calculate(historicalData, config.timeframe, {
+        method: config.method,
+        levels: 5
+      }),
+      demark: calculator.calculate(historicalData, config.timeframe, {
+        method: 'demark',
+        levels: 3
+      })
     };
   });
 
   // Format pivot levels for display
-  const formatPivotLevels = (levels: StandardPivotLevels, demarkLevels: DeMarkPivotLevels, prices: HistoricalPrice[]) => {
+  const formatPivotLevels = (levels: PivotPoints, demarkLevels: PivotPoints, prices: HistoricalPrice[]) => {
     const pivots = Object.entries(levels)
       .filter(([key]) => key !== 'pp')
       .map(([level, value]) => ({
         level: level.toUpperCase(),
-        value,
-        demarkValue: level === 'R1' ? demarkLevels.r1 : 
-                     level === 'S1' ? demarkLevels.s1 : null,
-        distance: ((value - currentPrice) / currentPrice) * 100,
-        isAbove: value > currentPrice,
-        touches: getTouches(prices, value)
+        value: value as number,
+        demarkValue: level === 'r1' ? demarkLevels.r1 :
+                     level === 's1' ? demarkLevels.s1 : null,
+        distance: ((value as number - currentPrice) / currentPrice) * 100,
+        isAbove: (value as number) > currentPrice,
+        touches: getTouches(prices, value as number)
       }))
       .sort((a, b) => b.value - a.value);
 
@@ -138,7 +150,7 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
     pivots: formatPivotLevels(levels, demark, prices)
   }));
 
-  const renderPivotCard = (title: string, pivotLevels: StandardPivotLevels, demarkLevels: { pp: number; r1: number; s1: number }, description: string) => {
+  const renderPivotCard = (title: string, pivotLevels: PivotPoints, demarkLevels: PivotPoints, description: string) => {
     if (!pivotLevels) return null;
 
     const getPriceClass = (price: number) => {
@@ -197,16 +209,16 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
   };
   
   return (
-    <div className="space-y-8">
-      <div>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-1">
         <h1 className="font-heading text-3xl md:text-4xl">Pivot Analysis</h1>
         <p className="text-muted-foreground">
           Multi-Timeframe Pivot Point Analysis
         </p>
       </div>
 
-      <div className="w-full max-w-xl mx-auto">
-        <div className="flex flex-col gap-4">
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="flex flex-col gap-4 mx-auto">
           <SearchSymbol defaultSymbol={symbolParam} />
           {quote && (
             <div className="flex items-center justify-between p-2 bg-card rounded-lg border">
@@ -229,7 +241,7 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
         {pivotsByTimeframe ? (
           <>
             {pivotsByTimeframe.map(({ timeframe, pivots }) => {
@@ -237,11 +249,11 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
               if (!result) return null;
               
               const descriptions = {
-                daily: "Based on the last trading day",
-                weekly: "Based on the last 5 trading days",
-                monthly: "Based on the last 20 trading days",
-                quarterly: "Based on the last 60 trading days",
-                yearly: "Based on the last 250 trading days"
+                daily: "Based on the previous trading day's data",
+                weekly: "Based on the last 5 trading days (rolling week)",
+                monthly: "Based on the last 21 trading days (rolling month)",
+                quarterly: "Based on the last 63 trading days (rolling quarter)",
+                yearly: "Based on the last 252 trading days (rolling year)"
               };
 
               return renderPivotCard(
@@ -268,7 +280,7 @@ export default async function PivotsPage({ searchParams }: { searchParams: { [ke
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Current</p>
                 <p className="text-lg font-medium">${currentQuote.price.toFixed(2)}</p>

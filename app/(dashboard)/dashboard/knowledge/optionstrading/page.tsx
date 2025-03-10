@@ -10,7 +10,7 @@ import {
 
 export default function OptionsPage() {
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="py-6 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Optionstrading Grundlagen</h1>
         <p className="text-muted-foreground">

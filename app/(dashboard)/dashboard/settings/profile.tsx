@@ -3,9 +3,9 @@
 import { useUser, UserButton, SignOutButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
-import { Sun, Moon, LogOut, ChevronRight } from "lucide-react"
+import { Sun, Moon, LogOut } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import { useState } from "react"
+import Link from "next/link"
 import {
   Card,
   CardContent,
@@ -13,22 +13,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { SubscriptionDialog } from "@/components/subscription/subscription-dialog"
 import { Badge } from "@/components/ui/badge"
-import { useSubscription, getPlanStatusText, getPlanStatusColor } from "@/hooks/use-subscription"
-import { PLANS, SUBSCRIPTION_PLANS } from "@/config/subscriptions"
+import { useSubscriptionContext } from "@/components/subscription/subscription-provider"
+import { SubscriptionDetails } from "@/components/subscription/subscription-details"
+import { TrialCountdown } from "@/components/subscription/trial-countdown"
+import { useEffect, useState } from "react"
 
 export function UserProfile() {
   const { theme, setTheme } = useTheme()
   const { user } = useUser()
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false)
-  const { plan, status, isTrialing, trialEndsAt } = useSubscription()
+  const { isPro, isTrialing } = useSubscriptionContext()
+  const [mounted, setMounted] = useState(false)
 
-  const statusText = getPlanStatusText(status, isTrialing, trialEndsAt)
-  const statusColor = getPlanStatusColor(status)
+  // Nach dem Mount setzen, um Hydration Mismatch zu vermeiden
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Profile Card */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Profil Einstellungen</CardTitle>
@@ -57,51 +61,23 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      {/* Subscription Card */}
+      {/* Trial Warning */}
+      {isTrialing && <TrialCountdown />}
+
+      {/* Subscription Details */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Abonnement</CardTitle>
+          <CardTitle>Abonnement & Rechnungen</CardTitle>
           <CardDescription>
-            Dein aktuelles Abonnement und Optionen
+            Verwalten Sie Ihr Abonnement und sehen Sie Ihre Rechnungen ein
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">{PLANS[plan].name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {isTrialing && trialEndsAt ? 
-                  `Trial endet am ${new Date(trialEndsAt).toLocaleDateString('de-DE')}` : 
-                  'Dein aktuelles Abonnement'
-                }
-              </p>
-            </div>
-            <Badge variant={statusColor}>
-              {statusText}
-            </Badge>
-          </div>
-
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Enthaltene Features:</p>
-            <ul className="list-disc list-inside space-y-1">
-              {PLANS[plan].features.map(feature => (
-                <li key={feature.name}>{feature.value}</li>
-              ))}
-            </ul>
-          </div>
-
-          <Button 
-            variant="outline" 
-            className="w-full group"
-            onClick={() => setIsSubscriptionDialogOpen(true)}
-          >
-            {plan === SUBSCRIPTION_PLANS.PRO ? 'Abonnement verwalten' : 'Upgrade auf Pro'}
-            <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
+        <CardContent>
+          <SubscriptionDetails />
         </CardContent>
       </Card>
 
-      {/* Settings Card */}
+      {/* App Settings */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Einstellungen</CardTitle>
@@ -109,7 +85,7 @@ export function UserProfile() {
             Passe die App an deine Bedürfnisse an
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {/* Theme Toggle */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -118,20 +94,40 @@ export function UserProfile() {
                 Wähle zwischen Light und Dark Mode
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            {mounted && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
+            )}
           </div>
 
           <Separator />
+
+          {/* Pro Badge */}
+          {isPro && (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <h3 className="font-medium">Account Status</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Sie haben Zugriff auf alle Pro-Features
+                  </p>
+                </div>
+                <Badge variant="default" className="text-sm">
+                  PRO
+                </Badge>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Sign Out Button */}
           <SignOutButton>
@@ -142,12 +138,6 @@ export function UserProfile() {
           </SignOutButton>
         </CardContent>
       </Card>
-
-      {/* Subscription Dialog */}
-      <SubscriptionDialog 
-        open={isSubscriptionDialogOpen} 
-        onOpenChange={setIsSubscriptionDialogOpen} 
-      />
     </div>
   )
 }

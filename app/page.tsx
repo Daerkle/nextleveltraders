@@ -92,13 +92,22 @@ export default function HomePage() {
       {/* Header */}
       <header className="container flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="NextLevelTraders Logo"
-            width={40}
-            height={40}
-            className="h-10 w-auto object-contain"
-          />
+          <>
+            <Image
+              src="/logo.png"
+              alt="NextLevelTraders Logo"
+              width={40}
+              height={40}
+              className="h-10 w-auto object-contain hidden dark:block"
+            />
+            <Image
+              src="/logo_weißbg.png"
+              alt="NextLevelTraders Logo"
+              width={40}
+              height={40}
+              className="h-10 w-auto object-contain dark:hidden"
+            />
+          </>
           <div className="flex items-baseline">
             <span className="font-heading font-bold text-xl">Next</span>
             <span className="font-heading font-light text-xl">Level</span>

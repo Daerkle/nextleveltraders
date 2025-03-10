@@ -1,110 +1,46 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { stripe, createCustomerPortalSession } from "@/lib/stripe";
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { createCustomerPortalSession } from "@/lib/stripe";
-import { stripe } from "@/lib/stripe";
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const session = await auth();
-    const userId = session?.userId;
-    
-    if (!userId) {
+    const authData = await auth();
+    const user = await currentUser();
+
+    if (!authData.userId || !user) {
       return NextResponse.json(
         { error: "Nicht authentifiziert" },
         { status: 401 }
       );
     }
 
-    const { returnUrl } = await request.json();
-
-    if (!returnUrl) {
-      return NextResponse.json(
-        { error: "Return-URL ist erforderlich" },
-        { status: 400 }
-      );
-    }
-
-    // Suche nach dem Stripe-Kunden für diesen Benutzer
-    const customers = await stripe.customers.search({
-      query: `metadata["userId"]:"${userId}"`,
+    // Suche existierenden Customer oder erstelle einen neuen
+    let customer;
+    const existingCustomers = await stripe.customers.list({
+      email: user.emailAddresses[0]?.emailAddress,
+      limit: 1,
     });
 
-    if (customers.data.length === 0) {
-      return NextResponse.json(
-        { error: "Kein Stripe-Kunde gefunden" },
-        { status: 404 }
-      );
-    }
-
-    const customer = customers.data[0];
-
-    // Erstelle eine Portal-Session
-    const { url } = await createCustomerPortalSession(
-      customer.id,
-      returnUrl
-    );
-
-    return NextResponse.json({ url });
-  } catch (error) {
-    console.error("Fehler beim Erstellen der Portal-Session:", error);
-    return NextResponse.json(
-      { error: "Interner Server-Fehler" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const session = await auth();
-    const userId = session?.userId;
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Nicht authentifiziert" },
-        { status: 401 }
-      );
-    }
-
-    // Suche nach dem Stripe-Kunden für diesen Benutzer
-    const customers = await stripe.customers.search({
-      query: `metadata["userId"]:"${userId}"`,
-    });
-
-    if (customers.data.length === 0) {
-      return NextResponse.json({
-        hasCustomer: false,
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+    } else {
+      // Erstelle neuen Customer
+      customer = await stripe.customers.create({
+        email: user.emailAddresses[0]?.emailAddress,
+        name: user.fullName || undefined,
+        metadata: {
+          clerkUserId: authData.userId,
+        },
       });
     }
 
-    const customer = customers.data[0];
+    const session = await createCustomerPortalSession(customer.id);
 
-    // Hole aktive Abonnements
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'active',
-      expand: ['data.default_payment_method'],
-    });
-
-    return NextResponse.json({
-      hasCustomer: true,
-      customerId: customer.id,
-      customer: {
-        email: customer.email,
-        name: customer.name,
-        subscriptions: subscriptions.data.map(sub => ({
-          id: sub.id,
-          status: sub.status,
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-          cancelAtPeriodEnd: sub.cancel_at_period_end,
-          defaultPaymentMethod: sub.default_payment_method,
-        })),
-      },
-    });
+    return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Fehler beim Abrufen der Kundeninformationen:", error);
+    console.error("Stripe Portal Error:", error);
     return NextResponse.json(
-      { error: "Interner Server-Fehler" },
+      { error: "Fehler beim Erstellen der Portal-Session" },
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { HelpCircleIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SetupsModal } from "@/components/dashboard/setups-modal";
+import { TooltipHelp } from "@/components/tooltip-help";
 
 // Statische Daten für den Fall, dass die API-Anfrage fehlschlägt
 const fallbackData = {
@@ -25,7 +26,7 @@ async function getMarketData() {
     
     // Abrufen der Indexdaten
     const indicesResponse = await fetch(
-      `https://financialmodelingprep.com/api/v3/quote/SPY,QQQ,VIX,TLT,IWM,DXY?apikey=${FMP_API_KEY}`,
+      `https://financialmodelingprep.com/api/v3/quote/SPY,QQQ,VXX,TLT,IWM,UUP,DIA?apikey=${FMP_API_KEY}`,
       { next: { revalidate: 60 } }
     );
     
@@ -61,14 +62,22 @@ async function getMarketData() {
         }))
       : [];
     
+    interface QuoteData {
+      symbol: string;
+      price: number;
+      change: number;
+      changesPercentage: number;
+    }
+
     // Extrahieren der Indexwerte
     const data = {
-      spy: indicesData.find(q => q.symbol === 'SPY') || fallbackData.spy,
-      qqq: indicesData.find(q => q.symbol === 'QQQ') || fallbackData.qqq,
-      vix: indicesData.find(q => q.symbol === 'VIX') || fallbackData.vix,
-      tlt: indicesData.find(q => q.symbol === 'TLT') || fallbackData.tlt,
-      iwm: indicesData.find(q => q.symbol === 'IWM') || fallbackData.iwm,
-      dxy: indicesData.find(q => q.symbol === 'DXY') || fallbackData.dxy,
+      spy: indicesData.find((q: QuoteData) => q.symbol === 'SPY') || fallbackData.spy,
+      qqq: indicesData.find((q: QuoteData) => q.symbol === 'QQQ') || fallbackData.qqq,
+      vix: indicesData.find((q: QuoteData) => q.symbol === 'VXX') || fallbackData.vix,
+      tlt: indicesData.find((q: QuoteData) => q.symbol === 'TLT') || fallbackData.tlt,
+      iwm: indicesData.find((q: QuoteData) => q.symbol === 'IWM') || fallbackData.iwm,
+      dxy: indicesData.find((q: QuoteData) => q.symbol === 'UUP') || fallbackData.dxy,
+      dji: indicesData.find((q: QuoteData) => q.symbol === 'DIA') || fallbackData.dji,
       watchlist: Array.isArray(watchlistData) ? watchlistData : [],
       news: newsData
     };
@@ -81,7 +90,7 @@ async function getMarketData() {
 }
 
 export default async function DashboardPage() {
-  const { spy, qqq, vix, tlt, iwm, dxy, watchlist, news } = await getMarketData();
+  const { spy, qqq, vix, tlt, iwm, dxy, dji, watchlist, news } = await getMarketData();
   
   // Funktion zur Bestimmung der Textfarbe basierend auf Prozentänderung
   const getChangeColor = (change: number) => {
@@ -100,7 +109,10 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">SPY</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">SPY</CardTitle>
+              <TooltipHelp content="Der S&P 500 ETF bildet die Entwicklung der 500 größten US-Unternehmen ab und gilt als wichtigster Indikator für den US-Aktienmarkt." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${spy.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               S&P 500 ETF
             </div>
@@ -117,7 +129,10 @@ export default async function DashboardPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">QQQ</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">QQQ</CardTitle>
+              <TooltipHelp content="Der Nasdaq 100 ETF bildet die 100 größten Tech-Unternehmen an der NASDAQ ab. Ein wichtiger Indikator für den Technologiesektor." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${qqq.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               Nasdaq 100 ETF
             </div>
@@ -134,7 +149,10 @@ export default async function DashboardPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">VIX</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">VIX</CardTitle>
+              <TooltipHelp content="Der VXX ETN folgt dem VIX Volatilitätsindex. Steigt bei Marktunsicherheit und fällt in ruhigen Marktphasen. Ein wichtiger Angst-Indikator." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${vix.changesPercentage < 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               Volatilität
             </div>
@@ -151,7 +169,10 @@ export default async function DashboardPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">TLT</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">TLT</CardTitle>
+              <TooltipHelp content="Der TLT ETF bildet langfristige US-Staatsanleihen ab. Steigt oft bei Marktunsicherheit als sicherer Hafen und fällt bei Zinserhöhungen." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${tlt.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               US-Anleihen 20Y
             </div>
@@ -168,7 +189,10 @@ export default async function DashboardPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">IWM</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">IWM</CardTitle>
+              <TooltipHelp content="Der Russell 2000 ETF bildet kleinere US-Unternehmen ab. Ein wichtiger Indikator für die Breite des Marktes und die Risikobereitschaft der Anleger." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${iwm.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               Russell 2000
             </div>
@@ -185,7 +209,30 @@ export default async function DashboardPage() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">DXY</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">DJI</CardTitle>
+              <TooltipHelp content="Der DIA ETF bildet den Dow Jones Industrial Average ab. Er enthält 30 der größten und traditionsreichsten US-Unternehmen." />
+            </div>
+            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${dji.changesPercentage > 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
+              Dow Jones ETF
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold">
+              ${dji.price ? dji.price.toFixed(2) : '0.00'}
+            </div>
+            <p className={`text-sm font-medium ${getChangeColor(dji.changesPercentage)}`}>
+              {dji.changesPercentage > 0 ? '+' : ''}{dji.changesPercentage.toFixed(2)}%
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">DXY</CardTitle>
+              <TooltipHelp content="Der UUP ETF bildet die Stärke des US-Dollars gegenüber anderen Währungen ab. Ein starker Dollar kann die Exporte belasten und Rohstoffpreise beeinflussen." />
+            </div>
             <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${dxy.changesPercentage < 0 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'}`}>
               US Dollar Index
             </div>

@@ -287,7 +287,7 @@ export async function searchSymbol(query: string) {
 
 export async function getMarketIndices() {
   try {
-    const url = `${FMP_BASE_URL}quote/%5EGSPC,%5EIXIC?apikey=${FMP_API_KEY}`;
+    const url = `${FMP_BASE_URL}quote/%5EGSPC,%5EIXIC,%5EVIX,DXY,%5EDJI?apikey=${FMP_API_KEY}`;
     console.log('Fetching market indices from:', url);
     
     const response = await fetch(url, {

@@ -239,33 +239,40 @@ export function getTrendStatus(cloud5_12: EMACloud, cloud34_50: EMACloud): {
     slow: cloud34_50.slow[cloud34_50.slow.length - 1]
   };
   
-  // Get the latest closing price
-  const latestPrice = cloud5_12.fast[cloud5_12.fast.length - 1];
+  // Get the latest prices and indicators
+  const prices = cloud5_12.fast;
+  const latestPrice = prices[prices.length - 1];
+  const previousPrice = prices[prices.length - 2];
 
-  // Intraday Trend (5-12)
+  // Primary Trend based on 34-50 zone
+  const aboveLongTermZone = latestPrice > latest34_50.slow;
+  const belowLongTermZone = latestPrice < latest34_50.slow;
+
+  // Short-term confirmation using 5-12 zone
+  const shortTermBullish = latest5_12.fast > latest5_12.slow;
+  const shortTermBearish = latest5_12.fast < latest5_12.slow;
+
+  // Intraday Trend
   let intradayTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-  const intraCloud = latestPrice > latest5_12.slow;
-  if (intraCloud && latest5_12.fast > latest5_12.slow) {
+  if (shortTermBullish && latestPrice > previousPrice) {
     intradayTrend = 'bullish';
-  } else if (!intraCloud && latest5_12.fast < latest5_12.slow) {
+  } else if (shortTermBearish && latestPrice < previousPrice) {
     intradayTrend = 'bearish';
   }
 
-  // Swing Trend (34-50)
+  // Swing Trend
   let swingTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-  const swingCloud = latestPrice > latest34_50.slow;
-  if (swingCloud) {
+  if (aboveLongTermZone) {
     swingTrend = 'bullish';
-  } else if (!swingCloud) {
+  } else if (belowLongTermZone) {
     swingTrend = 'bearish';
   }
 
   // Position Trend (Overall)
   let positionTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-  
-  if (latestPrice > latest34_50.slow && latest5_12.fast > latest5_12.slow) {
+  if (aboveLongTermZone && shortTermBullish) {
     positionTrend = 'bullish';
-  } else if (latestPrice < latest34_50.slow && latest5_12.fast < latest5_12.slow) {
+  } else if (belowLongTermZone && shortTermBearish) {
     positionTrend = 'bearish';
   }
 

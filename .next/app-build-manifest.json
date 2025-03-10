@@ -35,6 +35,16 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/market-data/quotes/route.js"
+    ],
+    "/(dashboard)/dashboard/ki/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/dashboard/ki/page.js"
+    ],
+    "/api/market-data/scan/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/market-data/scan/route.js"
     ]
   }
 }

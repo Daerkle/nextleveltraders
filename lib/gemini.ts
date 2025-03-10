@@ -1,27 +1,27 @@
 import { calculateStandardPivots, calculateDeMarkPivots } from './market-data';
+import { MarketData, Setup, MarketDataPoint } from './types/market';
 
-export interface Setup {
-  symbol: string;
-  type: 'LONG' | 'SHORT';
-  entryPrice: number;
-  stopLoss: number;
-  target: number;
-  riskRewardRatio: number;
-  probability: number;
-  reason: string;
-}
-
-export async function analyzeSetup(symbol: string, marketData: any): Promise<Setup | null> {
+export async function analyzeSetup(symbol: string, marketData: MarketData): Promise<Setup | null> {
   try {
     const { daily, hourly, current } = marketData;
 
+    if (!daily.length || !current) {
+      console.error(`Unvollständige Marktdaten für ${symbol}`);
+      return null;
+    }
+
     // Standard Pivots für verschiedene Zeitrahmen berechnen
     const dailyPivots = calculateStandardPivots(daily[daily.length - 2]); // Gestern
-    const weeklyPivots = calculateStandardPivots({
+    
+    // Wöchentliche High/Low/Close/Open berechnen
+    const weeklyData: MarketDataPoint = {
       high: Math.max(...daily.slice(-5).map(d => d.high)),
       low: Math.min(...daily.slice(-5).map(d => d.low)),
-      close: daily[daily.length - 1].close
-    });
+      close: daily[daily.length - 1].close,
+      open: daily[daily.length - 5].open // Öffnungskurs vor 5 Tagen
+    };
+    
+    const weeklyPivots = calculateStandardPivots(weeklyData);
 
     // DeMark Pivots berechnen
     const deMarkPivots = calculateDeMarkPivots(daily[daily.length - 2]);
@@ -45,8 +45,9 @@ export async function analyzeSetup(symbol: string, marketData: any): Promise<Set
           stopLoss,
           target,
           riskRewardRatio,
-          probability: 0.7, // Basierend auf Multi-Timeframe Bestätigung
-          reason: 'Ausbruch über DM R1 mit Weekly R1 Bestätigung'
+          probability: 0.7,
+          reason: 'Ausbruch über DM R1 mit Weekly R1 Bestätigung',
+          timestamp: new Date().toISOString()
         };
       }
     }
@@ -68,7 +69,8 @@ export async function analyzeSetup(symbol: string, marketData: any): Promise<Set
           target,
           riskRewardRatio,
           probability: 0.7,
-          reason: 'Ausbruch unter DM S1 mit Weekly S1 Bestätigung'
+          reason: 'Ausbruch unter DM S1 mit Weekly S1 Bestätigung',
+          timestamp: new Date().toISOString()
         };
       }
     }
